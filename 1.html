@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Types & Devices</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #0891b2;
+            --accent: #7c3aed;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        nav {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        nav a:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        section {
+            margin-bottom: 3rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid var(--primary);
+            display: inline-block;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+        .card.lan::before { background: #22c55e; }
+        .card.wan::before { background: #ef4444; }
+        .card.man::before { background: #f59e0b; }
+        .card.pan::before { background: #8b5cf6; }
+
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .card p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 0.75rem;
+        }
+
+        .badge.green { background: #dcfce7; color: #166534; }
+        .badge.red { background: #fee2e2; color: #991b1b; }
+        .badge.amber { background: #fef3c7; color: #92400e; }
+        .badge.purple { background: #f3e8ff; color: #6b21a8; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        th {
+            background: var(--primary);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 0.9rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: #f1f5f9;
+        }
+
+        .device-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.25rem;
+            border: 1px solid var(--border);
+            transition: transform 0.2s;
+        }
+
+        .device-card:hover {
+            transform: translateX(4px);
+        }
+
+        .device-icon {
+            font-size: 2rem;
+            width: 50px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .device-info h4 {
+            font-size: 1.05rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .device-info p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .comparison-item {
+            background: var(--card-bg);
+            padding: 1.25rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .comparison-item h4 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .comparison-item .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .comparison-item .label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        footer {
+            background: var(--text);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        /* Fundamentals Section */
+        .fundamental-card {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: center;
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        }
+
+        .fundamental-card:nth-child(even) {
+            direction: rtl;
+        }
+
+        .fundamental-card:nth-child(even) > * {
+            direction: ltr;
+        }
+
+        .fundamental-text h3 {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .fundamental-text p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .fundamental-text ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .fundamental-text ul li {
+            padding: 0.3rem 0;
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+
+        .fundamental-text ul li::before {
+            content: '→ ';
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .diagram {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .diagram svg {
+            max-width: 100%;
+            height: auto;
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.08));
+        }
+
+        @media (max-width: 768px) {
+            header h1 { font-size: 1.8rem; }
+            nav ul { gap: 0.5rem; }
+            nav a { font-size: 0.9rem; padding: 0.4rem 0.7rem; }
+            .container { padding: 1rem; }
+            .fundamental-card {
+                grid-template-columns: 1fr;
+            }
+            .fundamental-card:nth-child(even) {
+                direction: ltr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Network Types & Devices</h1>
+    <p>LAN, WAN, MAN, PAN — Network Devices & Functions</p>
+</header>
+
+<nav>
+    <ul>
+        <li><a href="#fundamentals">Fundamentals</a></li>
+        <li><a href="#types">Network Types</a></li>
+        <li><a href="#comparison">Comparison</a></li>
+        <li><a href="#devices">Devices</a></li>
+        <li><a href="#functions">Functions</a></li>
+    </ul>
+</nav>
+
+    <div class="container">
+
+    <!-- Fundamentals Section -->
+    <section id="fundamentals">
+        <h2>Fundamentals</h2>
+
+        <!-- What is Network -->
+        <div class="fundamental-card">
+            <div class="fundamental-text">
+                <h3>What is a Network?</h3>
+                <p>A network is a collection of two or more interconnected devices (computers, servers, printers, etc.) that share resources, data, and communication channels.</p>
+                <p>Networks allow devices to exchange information using defined protocols and rules.</p>
+                <ul>
+                    <li>File and resource sharing</li>
+                    <li>Internet access for all connected devices</li>
+                    <li>Centralized data storage and backup</li>
+                    <li>Collaboration and communication</li>
+                </ul>
+            </div>
+            <div class="diagram">
+                <svg width="380" height="260" viewBox="0 0 380 260" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Cloud / Network Core -->
+                    <ellipse cx="190" cy="100" rx="100" ry="50" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+                    <text x="190" y="105" text-anchor="middle" font-size="13" font-weight="600" fill="#1e40af">Network</text>
+                    <!-- Devices -->
+                    <rect x="30" y="180" width="60" height="45" rx="6" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+                    <text x="60" y="207" text-anchor="middle" font-size="10" fill="#0369a1">💻 PC</text>
+                    <rect x="115" y="180" width="60" height="45" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+                    <text x="145" y="207" text-anchor="middle" font-size="10" fill="#15803d">🖨️ Printer</text>
+                    <rect x="200" y="180" width="60" height="45" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+                    <text x="230" y="207" text-anchor="middle" font-size="10" fill="#b45309">📱 Phone</text>
+                    <rect x="285" y="180" width="60" height="45" rx="6" fill="#f3e8ff" stroke="#9333ea" stroke-width="2"/>
+                    <text x="315" y="207" text-anchor="middle" font-size="10" fill="#7e22ce">🖥️ Server</text>
+                    <!-- Connection lines -->
+                    <line x1="60" y1="180" x2="150" y2="145" stroke="#94a3b8" stroke-width="2" stroke-dasharray="5,3"/>
+                    <line x1="145" y1="180" x2="175" y2="145" stroke="#94a3b8" stroke-width="2" stroke-dasharray="5,3"/>
+                    <line x1="230" y1="180" x2="205" y2="145" stroke="#94a3b8" stroke-width="2" stroke-dasharray="5,3"/>
+                    <line x1="315" y1="180" x2="230" y2="145" stroke="#94a3b8" stroke-width="2" stroke-dasharray="5,3"/>
+                    <!-- Labels -->
+                    <text x="190" y="250" text-anchor="middle" font-size="11" fill="#64748b">Connected Devices Sharing Resources</text>
+                </svg>
+            </div>
+        </div>
+
+        <!-- What is IP Address -->
+        <div class="fundamental-card">
+            <div class="fundamental-text">
+                <h3>What is an IP Address?</h3>
+                <p>An IP (Internet Protocol) Address is a unique numerical identifier assigned to every device on a network. It serves as the device's location address for sending and receiving data.</p>
+                <ul>
+                    <li><strong>IPv4:</strong> 32-bit format (e.g., 192.168.1.1)</li>
+                    <li><strong>IPv6:</strong> 128-bit format (e.g., 2001:0db8::1)</li>
+                    <li>Used for routing packets across networks</li>
+                    <li>Can be static (fixed) or dynamic (assigned by DHCP)</li>
+                </ul>
+            </div>
+            <div class="diagram">
+                <svg width="380" height="220" viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Device -->
+                    <rect x="20" y="70" width="80" height="60" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+                    <text x="60" y="105" text-anchor="middle" font-size="22">💻</text>
+                    <!-- Arrow -->
+                    <path d="M105 100 L155 100" stroke="#2563eb" stroke-width="3" marker-end="url(#arrowIP)"/>
+                    <defs><marker id="arrowIP" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#2563eb"/></marker></defs>
+                    <!-- IP Address Box -->
+                    <rect x="160" y="55" width="210" height="90" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+                    <text x="265" y="82" text-anchor="middle" font-size="12" font-weight="700" fill="#1e40af">IP Address</text>
+                    <rect x="175" y="92" width="180" height="40" rx="6" fill="#2563eb"/>
+                    <text x="265" y="117" text-anchor="middle" font-size="15" font-weight="700" fill="white" font-family="monospace">192.168.1.100</text>
+                    <!-- Labels -->
+                    <text x="60" y="155" text-anchor="middle" font-size="10" fill="#64748b">Device</text>
+                    <text x="195" y="175" text-anchor="middle" font-size="10" fill="#64748b">IPv4: 32-bit (4 octets)</text>
+                    <text x="195" y="195" text-anchor="middle" font-size="10" fill="#64748b">Example: 192.168.1.100</text>
+                </svg>
+            </div>
+        </div>
+
+        <!-- What is MAC Address -->
+        <div class="fundamental-card">
+            <div class="fundamental-text">
+                <h3>What is a MAC Address?</h3>
+                <p>A MAC (Media Access Control) Address is a unique hardware identifier burned into every network interface card (NIC) by the manufacturer. It operates at the Data Link layer (Layer 2).</p>
+                <ul>
+                    <li><strong>Format:</strong> 48-bit (12 hex digits)</li>
+                    <li><strong>Example:</strong> AA:BB:CC:DD:EE:FF</li>
+                    <li>First 6 digits = OUI (manufacturer ID)</li>
+                    <li>Last 6 digits = device-specific ID</li>
+                    <li>Used within a LAN for frame delivery</li>
+                </ul>
+            </div>
+            <div class="diagram">
+                <svg width="380" height="240" viewBox="0 0 380 240" xmlns="http://www.w3.org/2000/svg">
+                    <!-- NIC Card -->
+                    <rect x="20" y="30" width="120" height="80" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+                    <text x="80" y="65" text-anchor="middle" font-size="20">🔌</text>
+                    <text x="80" y="95" text-anchor="middle" font-size="10" fill="#15803d">Network Card</text>
+                    <!-- Arrow -->
+                    <path d="M145 70 L195 70" stroke="#16a34a" stroke-width="3" marker-end="url(#arrowMAC)"/>
+                    <defs><marker id="arrowMAC" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#16a34a"/></marker></defs>
+                    <!-- MAC Box -->
+                    <rect x="200" y="20" width="170" height="100" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+                    <text x="285" y="48" text-anchor="middle" font-size="12" font-weight="700" fill="#15803d">MAC Address</text>
+                    <!-- OUI -->
+                    <rect x="210" y="60" width="65" height="30" rx="5" fill="#16a34a"/>
+                    <text x="242" y="80" text-anchor="middle" font-size="12" font-weight="700" fill="white" font-family="monospace">AA:BB:CC</text>
+                    <!-- Separator -->
+                    <text x="282" y="80" text-anchor="middle" font-size="14" fill="#16a34a">:</text>
+                    <!-- Device ID -->
+                    <rect x="290" y="60" width="70" height="30" rx="5" fill="#059669"/>
+                    <text x="325" y="80" text-anchor="middle" font-size="12" font-weight="700" fill="white" font-family="monospace">DD:EE:FF</text>
+                    <!-- Legend -->
+                    <rect x="210" y="100" width="12" height="12" rx="2" fill="#16a34a"/>
+                    <text x="228" y="111" font-size="9" fill="#64748b">OUI (Manufacturer)</text>
+                    <rect x="300" y="100" width="12" height="12" rx="2" fill="#059669"/>
+                    <text x="318" y="111" font-size="9" fill="#64748b">Device ID</text>
+                    <!-- Note -->
+                    <text x="190" y="160" text-anchor="middle" font-size="10" fill="#64748b">48-bit Hardware Address (Burned-in)</text>
+                    <text x="190" y="180" text-anchor="middle" font-size="10" fill="#64748b">Used within Local Network (Layer 2)</text>
+                </svg>
+            </div>
+        </div>
+
+        <!-- What is Public IP -->
+        <div class="fundamental-card">
+            <div class="fundamental-text">
+                <h3>What is a Public IP?</h3>
+                <p>A Public IP address is globally unique and assigned by your ISP (Internet Service Provider). It is visible to the entire internet and allows your network to communicate with external servers and services.</p>
+                <ul>
+                    <li>Assigned by your ISP (e.g., Jio, Airtel, BSNL)</li>
+                    <li>Unique across the entire internet</li>
+                    <li>Required for hosting websites, games, servers</li>
+                    <li>Uses NAT to share among private devices</li>
+                    <li>Can be changed by restarting router (dynamic)</li>
+                </ul>
+            </div>
+            <div class="diagram">
+                <svg width="380" height="240" viewBox="0 0 380 240" xmlns="http://www.w3.org/2000/svg">
+                    <!-- ISP Cloud -->
+                    <ellipse cx="290" cy="70" rx="80" ry="40" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+                    <text x="290" y="65" text-anchor="middle" font-size="11" font-weight="600" fill="#991b1b">🌐 Internet</text>
+                    <text x="290" y="82" text-anchor="middle" font-size="10" fill="#b91c1c">(Public Network)</text>
+                    <!-- Router -->
+                    <rect x="140" y="120" width="90" height="50" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+                    <text x="185" y="150" text-anchor="middle" font-size="13">📡 Router</text>
+                    <!-- Home Network -->
+                    <rect x="15" y="120" width="100" height="110" rx="8" fill="#f0f9ff" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="4,3"/>
+                    <text x="65" y="140" text-anchor="middle" font-size="9" fill="#0369a1">Home Network</text>
+                    <text x="65" y="170" text-anchor="middle" font-size="14">💻</text>
+                    <text x="65" y="195" text-anchor="middle" font-size="14">📱</text>
+                    <text x="65" y="220" text-anchor="middle" font-size="14">🖥️</text>
+                    <!-- Connection to Internet -->
+                    <path d="M235 145 L260 95" stroke="#ef4444" stroke-width="2" marker-end="url(#arrowPub)"/>
+                    <defs><marker id="arrowPub" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#ef4444"/></marker></defs>
+                    <!-- Public IP Label -->
+                    <rect x="235" y="108" width="140" height="28" rx="6" fill="#ef4444"/>
+                    <text x="305" y="126" text-anchor="middle" font-size="11" font-weight="700" fill="white" font-family="monospace">Public IP: 103.45.67.89</text>
+                    <!-- Arrow from LAN to Router -->
+                    <path d="M120 165 L140 155" stroke="#0284c7" stroke-width="2" marker-end="url(#arrowBlue)"/>
+                    <defs><marker id="arrowBlue" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#0284c7"/></marker></defs>
+                </svg>
+            </div>
+        </div>
+
+        <!-- What is Private IP -->
+        <div class="fundamental-card">
+            <div class="fundamental-text">
+                <h3>What is a Private IP?</h3>
+                <p>A Private IP address is assigned to devices within a local network (LAN) by your router. These addresses are not routable on the internet and are reused across different home/office networks.</p>
+                <ul>
+                    <li><strong>Class A:</strong> 10.0.0.0 – 10.255.255.255</li>
+                    <li><strong>Class B:</strong> 172.16.0.0 – 172.31.255.255</li>
+                    <li><strong>Class C:</strong> 192.168.0.0 – 192.168.255.255</li>
+                    <li>Assigned automatically via DHCP</li>
+                    <li>Devices share one Public IP via NAT</li>
+                </ul>
+            </div>
+            <div class="diagram">
+                <svg width="380" height="260" viewBox="0 0 380 260" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Router -->
+                    <rect x="145" y="10" width="90" height="45" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+                    <text x="190" y="38" text-anchor="middle" font-size="13">📡 Router</text>
+                    <!-- Private IP Box -->
+                    <rect x="30" y="80" width="320" height="170" rx="10" fill="#f8fafc" stroke="#6366f1" stroke-width="2" stroke-dasharray="6,3"/>
+                    <text x="190" y="100" text-anchor="middle" font-size="11" font-weight="600" fill="#4f46e5">🔒 Private Network (LAN)</text>
+                    <!-- Device 1 -->
+                    <rect x="50" y="115" width="85" height="55" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+                    <text x="92" y="135" text-anchor="middle" font-size="14">💻</text>
+                    <rect x="57" y="142" width="70" height="18" rx="4" fill="#2563eb"/>
+                    <text x="92" y="155" text-anchor="middle" font-size="8" font-weight="600" fill="white" font-family="monospace">192.168.1.2</text>
+                    <!-- Device 2 -->
+                    <rect x="150" y="115" width="85" height="55" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+                    <text x="192" y="135" text-anchor="middle" font-size="14">📱</text>
+                    <rect x="157" y="142" width="70" height="18" rx="4" fill="#16a34a"/>
+                    <text x="192" y="155" text-anchor="middle" font-size="8" font-weight="600" fill="white" font-family="monospace">192.168.1.3</text>
+                    <!-- Device 3 -->
+                    <rect x="250" y="115" width="85" height="55" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+                    <text x="292" y="135" text-anchor="middle" font-size="14">🖥️</text>
+                    <rect x="257" y="142" width="70" height="18" rx="4" fill="#d97706"/>
+                    <text x="292" y="155" text-anchor="middle" font-size="8" font-weight="600" fill="white" font-family="monospace">192.168.1.4</text>
+                    <!-- Range Table -->
+                    <rect x="50" y="185" width="285" height="55" rx="6" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+                    <text x="192" y="202" text-anchor="middle" font-size="9" font-weight="700" fill="#475569">Private IP Ranges (RFC 1918)</text>
+                    <text x="80" y="218" text-anchor="middle" font-size="8" fill="#16a34a" font-weight="600">10.0.0.0/8</text>
+                    <text x="175" y="218" text-anchor="middle" font-size="8" fill="#2563eb" font-weight="600">172.16.0.0/12</text>
+                    <text x="285" y="218" text-anchor="middle" font-size="8" fill="#d97706" font-weight="600">192.168.0.0/16</text>
+                    <!-- Connection lines -->
+                    <line x1="92" y1="115" x2="170" y2="55" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3"/>
+                    <line x1="192" y1="115" x2="190" y2="55" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3"/>
+                    <line x1="292" y1="115" x2="210" y2="55" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3"/>
+                </svg>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- Network Types -->
+    <section id="types">
+        <h2>Network Types</h2>
+        <div class="cards">
+            <div class="card lan">
+                <div class="card-icon">🏢</div>
+                <h3>LAN (Local Area Network)</h3>
+                <p>Covers a small geographic area like a single building, office, or campus. High speed and low cost.</p>
+                <span class="badge green">1–10 Gbps</span>
+                <span class="badge green">~1 km range</span>
+            </div>
+            <div class="card wan">
+                <div class="card-icon">🌍</div>
+                <h3>WAN (Wide Area Network)</h3>
+                <p>Spans large geographic areas such as cities, countries, or the entire world. The internet is the largest WAN.</p>
+                <span class="badge red">150 Mbps – 10 Gbps</span>
+                <span class="badge red">Unlimited range</span>
+            </div>
+            <div class="card man">
+                <div class="card-icon">🏙️</div>
+                <h3>MAN (Metropolitan Area Network)</h3>
+                <p>Covers a city or large campus. Bridges LANs across a metropolitan area with high bandwidth.</p>
+                <span class="badge amber">100 Mbps – 10 Gbps</span>
+                <span class="badge amber">~5–50 km range</span>
+            </div>
+            <div class="card pan">
+                <div class="card-icon">📱</div>
+                <h3>PAN (Personal Area Network)</h3>
+                <p>Connects devices around a single person. Used for Bluetooth, USB, and wearable connections.</p>
+                <span class="badge purple">1–100 Mbps</span>
+                <span class="badge purple">~1–10 m range</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison -->
+    <section id="comparison">
+        <h2>Network Comparison</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Feature</th>
+                    <th>PAN</th>
+                    <th>LAN</th>
+                    <th>MAN</th>
+                    <th>WAN</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Area Covered</strong></td>
+                    <td>Personal space</td>
+                    <td>Building / Campus</td>
+                    <td>City</td>
+                    <td>Country / Global</td>
+                </tr>
+                <tr>
+                    <td><strong>Speed</strong></td>
+                    <td>Low–Medium</td>
+                    <td>High</td>
+                    <td>Medium–High</td>
+                    <td>Low–High</td>
+                </tr>
+                <tr>
+                    <td><strong>Ownership</strong></td>
+                    <td>Individual</td>
+                    <td>Private</td>
+                    <td>Private / ISP</td>
+                    <td>ISP / Telco</td>
+                </tr>
+                <tr>
+                    <td><strong>Cost</strong></td>
+                    <td>Very Low</td>
+                    <td>Low</td>
+                    <td>Moderate</td>
+                    <td>High</td>
+                </tr>
+                <tr>
+                    <td><strong>Examples</strong></td>
+                    <td>Bluetooth, USB</td>
+                    <td>Ethernet, Wi-Fi</td>
+                    <td>Cable TV, City fiber</td>
+                    <td>Internet, MPLS</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Network Devices -->
+    <section id="devices">
+        <h2>Network Devices</h2>
+        <div class="cards">
+            <div class="device-card">
+                <div class="device-icon">📡</div>
+                <div class="device-info">
+                    <h4>Router</h4>
+                    <p>Directs data packets between different networks using IP addresses. Connects LAN to WAN/Internet.</p>
+                </div>
+            </div>
+            <div class="device-card">
+                <div class="device-icon">🔀</div>
+                <div class="device-info">
+                    <h4>Switch</h4>
+                    <p>Connects devices within a LAN. Uses MAC addresses to forward data to the correct destination port.</p>
+                </div>
+            </div>
+            <div class="device-card">
+                <div class="device-icon">🌐</div>
+                <div class="device-info">
+                    <h4>Hub</h4>
+                    <p>Broadcasts data to all connected devices. Less efficient than a switch — largely obsolete.</p>
+                </div>
+            </div>
+            <div class="device-card">
+                <div class="device-icon">🛡️</div>
+                <div class="device-info">
+                    <h4>Firewall</h4>
+                    <p>Monitors and filters incoming/outgoing network traffic. Protects against unauthorized access.</p>
+                </div>
+            </div>
+            <div class="device-card">
+                <div class="device-icon">📶</div>
+                <div class="device-info">
+                    <h4>Access Point (AP)</h4>
+                    <p>Provides wireless connectivity to a wired network. Enables Wi-Fi access for devices.</p>
+                </div>
+            </div>
+            <div class="device-card">
+                <div class="device-icon">🔌</div>
+                <div class="device-info">
+                    <h4>Modem</h4>
+                    <p>Modulates/demodulates signals for data transmission over phone lines, cable, or fiber.</p>
+                </div>
+            </div>
+            <div class="device-card">
+                <div class="device-icon">🔓</div>
+                <div class="device-info">
+                    <h4>Gateway</h4>
+                    <p>Acts as a protocol converter between different network types. Entry/exit point of a network.</p>
+                </div>
+            </div>
+            <div class="device-card">
+                <div class="device-icon">🔄</div>
+                <div class="device-info">
+                    <h4>Bridge</h4>
+                    <p>Connects two separate network segments at the data link layer. Reduces collision domains.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Device Functions -->
+    <section id="functions">
+        <h2>Key Device Functions</h2>
+        <div class="comparison">
+            <div class="comparison-item">
+                <h4>Data Routing</h4>
+                <p class="label">Routers select the best path for packets across networks using routing tables and protocols (OSPF, BGP).</p>
+            </div>
+            <div class="comparison-item">
+                <h4>Frame Switching</h4>
+                <p class="label">Switches forward frames based on MAC address tables, creating dedicated collision-free paths.</p>
+            </div>
+            <div class="comparison-item">
+                <h4>Packet Filtering</h4>
+                <p class="label">Firewalls inspect packet headers and payloads to allow or block traffic based on rules.</p>
+            </div>
+            <div class="comparison-item">
+                <h4>Signal Conversion</h4>
+                <p class="label">Modems convert digital data to analog signals and back for transmission over various media.</p>
+            </div>
+            <div class="comparison-item">
+                <h4>Wireless Bridging</h4>
+                <p class="label">Access Points extend wired networks wirelessly, managing association, authentication, and encryption.</p>
+            </div>
+            <div class="comparison-item">
+                <h4>Protocol Translation</h4>
+                <p class="label">Gateways convert data between different protocols, enabling communication across dissimilar networks.</p>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<footer>
+    <p>Network Types & Devices Reference Guide</p>
+</footer>
+
+<script>
+    document.querySelectorAll('nav a').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

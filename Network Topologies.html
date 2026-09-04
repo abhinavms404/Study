@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Network Topologies</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.7; }
+    nav { position: fixed; top: 0; width: 100%; background: rgba(15,23,42,.92); backdrop-filter: blur(12px); border-bottom: 1px solid #1e293b; z-index: 100; padding: 14px 0; }
+    nav ul { display: flex; justify-content: center; gap: 28px; list-style: none; flex-wrap: wrap; }
+    nav a { color: #94a3b8; text-decoration: none; font-size: 14px; font-weight: 600; letter-spacing: .5px; transition: .3s; }
+    nav a:hover { color: #38bdf8; }
+    .hero { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 120px 20px 60px; background: radial-gradient(ellipse at 50% 0%, #1e3a5f 0%, #0f172a 70%); }
+    .hero h1 { font-size: clamp(2.2rem, 6vw, 4rem); font-weight: 800; background: linear-gradient(135deg, #38bdf8, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 16px; }
+    .hero p { max-width: 600px; color: #94a3b8; font-size: 1.1rem; }
+    .scroll-hint { margin-top: 40px; animation: bounce 2s infinite; color: #475569; font-size: 24px; }
+    @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(10px); } }
+    section { max-width: 1100px; margin: 0 auto; padding: 80px 24px; }
+    .section-label { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #38bdf8; background: rgba(56,189,248,.1); padding: 6px 16px; border-radius: 20px; margin-bottom: 16px; }
+    section h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; margin-bottom: 12px; color: #f1f5f9; }
+    section > p.intro { color: #94a3b8; font-size: 1.05rem; max-width: 750px; margin-bottom: 48px; }
+    svg text { font-family: 'Segoe UI', sans-serif; }
+    .anim-label { text-align: center; color: #64748b; font-size: .8rem; margin: 16px 0 8px; letter-spacing: 1px; text-transform: uppercase; font-weight: 600; }
+    .anim-diagram { background: #0f172a; border: 1px solid #1e293b; border-radius: 16px; padding: 24px; margin-top: 12px; display: flex; justify-content: center; }
+
+    /* TOPOLOGY */
+    .what-box { background: #1e293b; border-radius: 16px; padding: 36px; margin-top: 36px; border: 1px solid #1e293b; }
+    .what-box h3 { color: #38bdf8; font-size: 1.1rem; margin-bottom: 10px; }
+    .what-box p { color: #94a3b8; font-size: .95rem; }
+    .what-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px; }
+    .what-item { background: rgba(56,189,248,.05); border: 1px solid rgba(56,189,248,.12); border-radius: 12px; padding: 20px; text-align: center; }
+    .what-item h4 { color: #f1f5f9; font-size: 1rem; margin-bottom: 6px; }
+    .what-item p { color: #94a3b8; font-size: .85rem; }
+    .what-item .diagram { margin-top: 14px; display: flex; justify-content: center; }
+    .what-detail { margin-top: 16px; text-align: left; }
+    .what-detail p { color: #94a3b8; font-size: .88rem; line-height: 1.6; margin-bottom: 10px; }
+    .what-detail ul { list-style: none; padding: 0; margin: 0 0 12px; }
+    .what-detail li { color: #94a3b8; font-size: .85rem; padding: 4px 0 4px 18px; position: relative; }
+    .what-detail li::before { content: ''; position: absolute; left: 0; top: 11px; width: 8px; height: 8px; border-radius: 50%; border: 2px solid #38bdf8; }
+    .what-item:last-child .what-detail li::before { border-color: #a78bfa; }
+    .what-example { background: rgba(56,189,248,.06); border-left: 3px solid #38bdf8; padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 12px 0; font-size: .85rem; color: #94a3b8; }
+    .what-item:last-child .what-example { border-left-color: #a78bfa; background: rgba(167,139,250,.06); }
+    .what-compare { margin-top: 36px; background: #1e293b; border-radius: 16px; padding: 28px; border: 1px solid #1e293b; }
+    .what-compare h3 { color: #f1f5f9; font-size: 1.1rem; margin-bottom: 16px; text-align: center; }
+    .compare-row { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; }
+    .compare-item { display: flex; align-items: center; gap: 12px; }
+    .compare-item p { color: #94a3b8; font-size: .9rem; margin: 0; }
+
+    /* CARDS */
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+    .card { background: linear-gradient(145deg, #1e293b, #0f172a); border: 1px solid #1e293b; border-radius: 16px; padding: 28px; transition: .3s; }
+    .card:hover { border-color: #38bdf8; transform: translateY(-4px); box-shadow: 0 12px 40px rgba(56,189,248,.1); }
+    .card h3 { font-size: 1.15rem; color: #f1f5f9; margin-bottom: 8px; }
+    .card p { color: #94a3b8; font-size: .92rem; }
+    .card .diagram { margin: 18px 0; display: flex; justify-content: center; }
+
+    /* TRANSMISSION */
+    .tx-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px; margin-top: 36px; }
+    .tx-box { background: #1e293b; border-radius: 16px; padding: 32px; border: 1px solid #1e293b; transition: .3s; }
+    .tx-box:hover { border-color: #38bdf8; transform: translateY(-4px); box-shadow: 0 12px 40px rgba(56,189,248,.1); }
+    .tx-box h3 { color: #38bdf8; margin-bottom: 8px; font-size: 1.2rem; }
+    .tx-box p { color: #94a3b8; font-size: .92rem; }
+    .tx-box .diagram { margin-top: 18px; display: flex; justify-content: center; }
+    .example-box { background: rgba(56,189,248,.05); border: 1px solid rgba(56,189,248,.15); border-radius: 12px; padding: 20px; margin-top: 20px; }
+    .example-box h4 { color: #38bdf8; font-size: .85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .example-box p { color: #94a3b8; font-size: .9rem; }
+
+    /* CASTING */
+    .cast-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px; margin-top: 36px; }
+    .cast-card { background: #1e293b; border-radius: 16px; padding: 32px; border-left: 4px solid #38bdf8; transition: .3s; }
+    .cast-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(56,189,248,.1); }
+    .cast-card.broadcast { border-left-color: #f97316; }
+    .cast-card.multicast { border-left-color: #a78bfa; }
+    .cast-card h3 { font-size: 1.2rem; margin-bottom: 8px; color: #f1f5f9; }
+    .cast-card p { color: #94a3b8; font-size: .92rem; }
+    .cast-card .diagram { margin-top: 18px; display: flex; justify-content: center; }
+    .cast-card.broadcast .example-box { background: rgba(249,115,22,.05); border-color: rgba(249,115,22,.15); }
+    .cast-card.broadcast .example-box h4 { color: #f97316; }
+    .cast-card.multicast .example-box { background: rgba(167,139,250,.05); border-color: rgba(167,139,250,.15); }
+    .cast-card.multicast .example-box h4 { color: #a78bfa; }
+
+    /* ENDPOINT */
+    .ep-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 36px; }
+    .ep-box { background: #1e293b; border-radius: 16px; padding: 36px; text-align: center; border: 1px solid #1e293b; transition: .3s; }
+    .ep-box:hover { border-color: #38bdf8; transform: translateY(-4px); box-shadow: 0 12px 40px rgba(56,189,248,.1); }
+    .ep-box h3 { color: #38bdf8; margin-bottom: 12px; font-size: 1.3rem; }
+    .ep-box > p { color: #94a3b8; font-size: .95rem; margin-bottom: 20px; }
+    .ep-box .diagram { display: flex; justify-content: center; }
+
+    footer { text-align: center; padding: 40px 20px; color: #475569; font-size: .85rem; border-top: 1px solid #1e293b; margin-top: 40px; }
+
+    /* TOC */
+    .toc { max-width: 900px; margin: 0 auto; padding: 60px 24px; }
+    .toc h2 { text-align: center; font-size: 1.8rem; margin-bottom: 36px; color: #f1f5f9; }
+    .toc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+    .toc-card { background: #1e293b; border-radius: 14px; padding: 24px; border: 1px solid #1e293b; transition: .3s; cursor: pointer; text-decoration: none; display: block; }
+    .toc-card:hover { border-color: #38bdf8; transform: translateY(-4px); box-shadow: 0 12px 40px rgba(56,189,248,.1); }
+    .toc-num { display: inline-block; width: 36px; height: 36px; line-height: 36px; text-align: center; border-radius: 10px; font-size: 14px; font-weight: 800; margin-bottom: 12px; }
+    .toc-card:nth-child(1) .toc-num { background: rgba(56,189,248,.15); color: #38bdf8; }
+    .toc-card:nth-child(2) .toc-num { background: rgba(56,189,248,.15); color: #38bdf8; }
+    .toc-card:nth-child(3) .toc-num { background: rgba(167,139,250,.15); color: #a78bfa; }
+    .toc-card:nth-child(4) .toc-num { background: rgba(249,115,22,.15); color: #f97316; }
+    .toc-card:nth-child(5) .toc-num { background: rgba(34,197,94,.15); color: #22c55e; }
+    .toc-card h3 { color: #f1f5f9; font-size: 1.05rem; margin-bottom: 6px; }
+    .toc-card p { color: #64748b; font-size: .85rem; line-height: 1.5; }
+
+    @media (max-width: 700px) { .what-row, .ep-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <ul>
+    <li><a href="#what">What is Topology</a></li>
+    <li><a href="#topologies">Topologies</a></li>
+    <li><a href="#transmission">Transmission</a></li>
+    <li><a href="#casting">Casting</a></li>
+    <li><a href="#endpoint">Endpoint &amp; End User</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>Network Topologies</h1>
+  <p>Understand how devices are connected, how data travels, and how communication works in computer networks.</p>
+  <div class="scroll-hint">&#8964;</div>
+</div>
+
+<!-- ===== TABLE OF CONTENTS ===== -->
+<div class="toc">
+  <h2>Content Table</h2>
+  <div class="toc-grid">
+    <a href="#what" class="toc-card">
+      <div class="toc-num">01</div>
+      <h3>What is Topology?</h3>
+      <p>Learn the meaning of topology, physical vs logical topology, with animated examples.</p>
+    </a>
+    <a href="#topologies" class="toc-card">
+      <div class="toc-num">02</div>
+      <h3>Types of Topologies</h3>
+      <p>Bus, Star, Ring, Mesh, Tree, Hybrid — each with diagrams and animations.</p>
+    </a>
+    <a href="#transmission" class="toc-card">
+      <div class="toc-num">03</div>
+      <h3>Transmission Methods</h3>
+      <p>Simplex, Half-Duplex, Full-Duplex — how data direction works.</p>
+    </a>
+    <a href="#casting" class="toc-card">
+      <div class="toc-num">04</div>
+      <h3>Casting Methods</h3>
+      <p>Unicast, Broadcast, Multicast — who receives the data.</p>
+    </a>
+    <a href="#endpoint" class="toc-card">
+      <div class="toc-num">05</div>
+      <h3>Endpoint &amp; End User</h3>
+      <p>What are endpoints, who are end users — devices and people.</p>
+    </a>
+  </div>
+</div>
+
+<!-- ===== WHAT IS TOPOLOGY ===== -->
+<section id="what">
+  <span class="section-label">First</span>
+  <h2>What is Topology?</h2>
+  <p class="intro">The word <strong>"Topology"</strong> comes from two Greek words: <em>topos</em> (place) and <em>logos</em> (study). So topology literally means <strong>"the study of placement."</strong></p>
+
+  <div class="what-box">
+    <h3>In Simple Words</h3>
+    <p>Topology is simply <strong>how things are arranged or connected</strong>. In networking, it describes how devices (like PCs, printers, servers) are physically or logically laid out and how data moves between them.</p>
+  </div>
+
+  <div class="what-row">
+    <div class="what-item">
+      <h4>Physical Topology</h4>
+      <p>How devices are <strong>physically</strong> wired or connected with cables.</p>
+      <div class="diagram">
+        <svg width="160" height="90" viewBox="0 0 160 90">
+          <circle cx="30" cy="45" r="12" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/><text x="30" y="49" text-anchor="middle" fill="#e2e8f0" font-size="8">PC</text>
+          <line x1="44" y1="45" x2="76" y2="45" stroke="#38bdf8" stroke-width="2"/>
+          <circle cx="90" cy="45" r="14" fill="#38bdf8" opacity=".15" stroke="#38bdf8" stroke-width="2"/><text x="90" y="49" text-anchor="middle" fill="#38bdf8" font-size="7" font-weight="600">SW</text>
+          <line x1="106" y1="45" x2="126" y2="45" stroke="#38bdf8" stroke-width="2"/>
+          <circle cx="140" cy="45" r="12" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/><text x="140" y="49" text-anchor="middle" fill="#e2e8f0" font-size="8">PC</text>
+          <text x="80" y="80" text-anchor="middle" fill="#64748b" font-size="9">The actual cable layout</text>
+        </svg>
+      </div>
+      <div class="what-detail">
+        <p><strong>Physical topology</strong> is about the <em>actual hardware</em> — the cables, switches, and how they are laid out in a room or building. It answers the question: <strong>"Where are the devices and how are they wired?"</strong></p>
+        <ul>
+          <li>Uses real cables (Ethernet, fiber optics)</li>
+          <li>Shows the shape of the network (bus, star, ring, etc.)</li>
+          <li>If a cable is cut, the physical layout breaks</li>
+          <li>Easy to see and touch</li>
+        </ul>
+        <div class="what-example">
+          <strong>Example:</strong> In an office, 5 PCs are connected to one switch with 5 Ethernet cables. The physical layout looks like a star — all cables go to the center switch.
+        </div>
+        <p class="anim-label">&#9654; Animation</p>
+        <div class="anim-diagram">
+          <svg width="200" height="60" viewBox="0 0 200 60">
+            <line x1="10" y1="30" x2="190" y2="30" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="30" cy="30" r="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+            <circle cx="70" cy="30" r="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+            <circle cx="110" cy="30" r="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+            <circle cx="150" cy="30" r="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+            <circle cx="180" cy="30" r="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+            <circle r="4" fill="#38bdf8" opacity=".8">
+              <animate attributeName="cx" values="30;180" dur="1.5s" repeatCount="indefinite"/>
+              <animate attributeName="cy" values="30;30" dur="1.5s" repeatCount="indefinite"/>
+            </circle>
+            <text x="100" y="55" text-anchor="middle" fill="#38bdf8" font-size="8" opacity=".7">Electrical signal through cable</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="what-item">
+      <h4>Logical Topology</h4>
+      <p>How data <strong>flows</strong> through the network, regardless of how cables are arranged.</p>
+      <div class="diagram">
+        <svg width="160" height="90" viewBox="0 0 160 90">
+          <circle cx="30" cy="45" r="12" fill="#1e293b" stroke="#a78bfa" stroke-width="2"/><text x="30" y="49" text-anchor="middle" fill="#e2e8f0" font-size="8">A</text>
+          <path d="M 44 45 Q 80 15 126 45" fill="none" stroke="#a78bfa" stroke-width="2" stroke-dasharray="5 3"/>
+          <polygon points="126,40 136,45 126,50" fill="#a78bfa"/>
+          <circle cx="140" cy="45" r="12" fill="#1e293b" stroke="#a78bfa" stroke-width="2"/><text x="140" y="49" text-anchor="middle" fill="#e2e8f0" font-size="8">B</text>
+          <text x="80" y="80" text-anchor="middle" fill="#64748b" font-size="9">The path data takes</text>
+        </svg>
+      </div>
+      <div class="what-detail">
+        <p><strong>Logical topology</strong> is about how <em>data actually travels</em> through the network. Even if cables are arranged one way, data might flow differently. It answers: <strong>"How does data move from A to B?"</strong></p>
+        <ul>
+          <li>Not about cables — about the <em>data path</em></li>
+          <li>Determined by network protocols and devices</li>
+          <li>Two networks can look the same physically but work differently logically</li>
+          <li>Invisible — you can't see it, only observe it</li>
+        </ul>
+        <div class="what-example">
+          <strong>Example:</strong> Two phones sharing a photo via Bluetooth. There's no cable — data travels wirelessly through the air. The physical topology is "no wires," but logically the data flows directly from Phone A to Phone B.
+        </div>
+        <p class="anim-label">&#9654; Animation</p>
+        <div class="anim-diagram">
+          <svg width="220" height="80" viewBox="0 0 220 80">
+            <rect x="15" y="10" width="36" height="55" rx="6" fill="#1e293b" stroke="#a78bfa" stroke-width="2"/>
+            <rect x="20" y="18" width="26" height="32" rx="2" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+            <circle cx="33" cy="58" r="3" fill="#334155"/>
+            <text x="33" y="39" text-anchor="middle" fill="#a78bfa" font-size="7">A</text>
+            <path d="M 60 28 Q 70 18 80 28" fill="none" stroke="#38bdf8" stroke-width="1.5" opacity=".5">
+              <animate attributeName="opacity" values=".2;.8;.2" dur="1.5s" repeatCount="indefinite"/>
+            </path>
+            <path d="M 58 37 Q 70 23 82 37" fill="none" stroke="#38bdf8" stroke-width="1.5" opacity=".7">
+              <animate attributeName="opacity" values=".3;.9;.3" dur="1.5s" repeatCount="indefinite" begin=".3s"/>
+            </path>
+            <path d="M 56 46 Q 70 28 84 46" fill="none" stroke="#38bdf8" stroke-width="1.5" opacity=".4">
+              <animate attributeName="opacity" values=".2;.7;.2" dur="1.5s" repeatCount="indefinite" begin=".6s"/>
+            </path>
+            <text x="70" y="42" text-anchor="middle" fill="#38bdf8" font-size="14" opacity=".8">&#9783;</text>
+            <rect x="169" y="10" width="36" height="55" rx="6" fill="#1e293b" stroke="#a78bfa" stroke-width="2"/>
+            <rect x="174" y="18" width="26" height="32" rx="2" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+            <circle cx="187" cy="58" r="3" fill="#334155"/>
+            <text x="187" y="39" text-anchor="middle" fill="#a78bfa" font-size="7">B</text>
+            <circle r="4" fill="#a78bfa" opacity=".9">
+              <animate attributeName="cx" values="52;170" dur="2s" repeatCount="indefinite"/>
+              <animate attributeName="cy" values="37;37" dur="2s" repeatCount="indefinite"/>
+            </circle>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="what-compare">
+    <h3>Physical vs Logical — Key Difference</h3>
+    <div class="compare-row">
+      <div class="compare-item">
+        <svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="none" stroke="#38bdf8" stroke-width="2"/><text x="20" y="25" text-anchor="middle" fill="#38bdf8" font-size="18">&#128269;</text></svg>
+        <p><strong>Physical</strong> = What you can <em>see</em> and <em>touch</em></p>
+      </div>
+      <div class="compare-item">
+        <svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="none" stroke="#a78bfa" stroke-width="2"/><text x="20" y="25" text-anchor="middle" fill="#a78bfa" font-size="18">&#128161;</text></svg>
+        <p><strong>Logical</strong> = What you can only <em>observe</em> in data flow</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TOPOLOGIES ===== -->
+<section id="topologies">
+  <span class="section-label">Session 1</span>
+  <h2>Types of Network Topologies</h2>
+  <p class="intro">There are several ways to arrange devices in a network. Each type has its own strengths and weaknesses.</p>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>Bus Topology</h3>
+      <div class="diagram">
+        <svg width="260" height="100" viewBox="0 0 260 100">
+          <line x1="10" y1="50" x2="250" y2="50" stroke="#38bdf8" stroke-width="3"/>
+          <rect x="25" y="35" width="30" height="30" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/><text x="40" y="54" text-anchor="middle" fill="#e2e8f0" font-size="9">PC</text>
+          <rect x="85" y="35" width="30" height="30" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/><text x="100" y="54" text-anchor="middle" fill="#e2e8f0" font-size="9">PC</text>
+          <rect x="145" y="35" width="30" height="30" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/><text x="160" y="54" text-anchor="middle" fill="#e2e8f0" font-size="9">PC</text>
+          <rect x="205" y="35" width="30" height="30" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/><text x="220" y="54" text-anchor="middle" fill="#e2e8f0" font-size="9">PC</text>
+          <text x="130" y="90" text-anchor="middle" fill="#64748b" font-size="11">Single backbone cable</text>
+        </svg>
+      </div>
+      <p>All devices share a single central cable. Data travels along the cable; if it breaks, the whole network goes down.</p>
+      <p class="anim-label">&#9654; How Data Flows</p>
+      <div class="anim-diagram">
+        <svg width="260" height="70" viewBox="0 0 260 70">
+          <line x1="10" y1="35" x2="250" y2="35" stroke="#334155" stroke-width="3"/>
+          <rect x="25" y="20" width="30" height="30" rx="4" fill="#1e293b" stroke="#475569" stroke-width="1.5"/><text x="40" y="39" text-anchor="middle" fill="#64748b" font-size="8">PC1</text>
+          <rect x="85" y="20" width="30" height="30" rx="4" fill="#1e293b" stroke="#475569" stroke-width="1.5"/><text x="100" y="39" text-anchor="middle" fill="#64748b" font-size="8">PC2</text>
+          <rect x="145" y="20" width="30" height="30" rx="4" fill="#1e293b" stroke="#475569" stroke-width="1.5"/><text x="160" y="39" text-anchor="middle" fill="#64748b" font-size="8">PC3</text>
+          <rect x="205" y="20" width="30" height="30" rx="4" fill="#1e293b" stroke="#475569" stroke-width="1.5"/><text x="220" y="39" text-anchor="middle" fill="#64748b" font-size="8">PC4</text>
+          <circle r="6" fill="#38bdf8" opacity=".9">
+            <animate attributeName="cx" values="40;220" dur="2s" repeatCount="indefinite"/>
+            <animate attributeName="cy" values="35;35" dur="2s" repeatCount="indefinite"/>
+          </circle>
+        </svg>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Star Topology</h3>
+      <div class="diagram">
+        <svg width="220" height="220" viewBox="0 0 220 220">
+          <circle cx="110" cy="110" r="18" fill="#38bdf8" opacity=".2" stroke="#38bdf8" stroke-width="2"/><text x="110" y="114" text-anchor="middle" fill="#38bdf8" font-size="10" font-weight="700">HUB</text>
+          <line x1="110" y1="110" x2="110" y2="22" stroke="#475569" stroke-width="1.5"/><rect x="95" y="7" width="30" height="20" rx="3" fill="#1e293b" stroke="#94a3b8" stroke-width="1.5"/><text x="110" y="21" text-anchor="middle" fill="#e2e8f0" font-size="8">PC1</text>
+          <line x1="110" y1="110" x2="195" y2="55" stroke="#475569" stroke-width="1.5"/><rect x="183" y="44" width="30" height="20" rx="3" fill="#1e293b" stroke="#94a3b8" stroke-width="1.5"/><text x="198" y="58" text-anchor="middle" fill="#e2e8f0" font-size="8">PC2</text>
+          <line x1="110" y1="110" x2="180" y2="180" stroke="#475569" stroke-width="1.5"/><rect x="165" y="172" width="30" height="20" rx="3" fill="#1e293b" stroke="#94a3b8" stroke-width="1.5"/><text x="180" y="186" text-anchor="middle" fill="#e2e8f0" font-size="8">PC3</text>
+          <line x1="110" y1="110" x2="40" y2="180" stroke="#475569" stroke-width="1.5"/><rect x="25" y="172" width="30" height="20" rx="3" fill="#1e293b" stroke="#94a3b8" stroke-width="1.5"/><text x="40" y="186" text-anchor="middle" fill="#e2e8f0" font-size="8">PC4</text>
+          <line x1="110" y1="110" x2="25" y2="55" stroke="#475569" stroke-width="1.5"/><rect x="10" y="44" width="30" height="20" rx="3" fill="#1e293b" stroke="#94a3b8" stroke-width="1.5"/><text x="25" y="58" text-anchor="middle" fill="#e2e8f0" font-size="8">PC5</text>
+        </svg>
+      </div>
+      <p>Every device connects to a central hub/switch. If one cable fails, only that device is affected. Easy to manage.</p>
+      <p class="anim-label">&#9654; How Data Flows</p>
+      <div class="anim-diagram">
+        <svg width="240" height="220" viewBox="0 0 240 220">
+          <line x1="120" y1="110" x2="120" y2="22" stroke="#334155" stroke-width="1.5"/>
+          <line x1="120" y1="110" x2="210" y2="55" stroke="#334155" stroke-width="1.5"/>
+          <line x1="120" y1="110" x2="195" y2="195" stroke="#334155" stroke-width="1.5"/>
+          <line x1="120" y1="110" x2="45" y2="195" stroke="#334155" stroke-width="1.5"/>
+          <line x1="120" y1="110" x2="30" y2="55" stroke="#334155" stroke-width="1.5"/>
+          <circle cx="120" cy="110" r="14" fill="#38bdf8" opacity=".15" stroke="#38bdf8" stroke-width="2"/><text x="120" y="114" text-anchor="middle" fill="#38bdf8" font-size="8" font-weight="600">HUB</text>
+          <rect x="105" y="8" width="30" height="20" rx="3" fill="#1e293b" stroke="#64748b" stroke-width="1.2"/><text x="120" y="22" text-anchor="middle" fill="#94a3b8" font-size="7">A</text>
+          <rect x="195" y="44" width="30" height="20" rx="3" fill="#1e293b" stroke="#64748b" stroke-width="1.2"/><text x="210" y="58" text-anchor="middle" fill="#94a3b8" font-size="7">B</text>
+          <rect x="180" y="186" width="30" height="20" rx="3" fill="#1e293b" stroke="#64748b" stroke-width="1.2"/><text x="195" y="200" text-anchor="middle" fill="#94a3b8" font-size="7">C</text>
+          <rect x="30" y="186" width="30" height="20" rx="3" fill="#1e293b" stroke="#64748b" stroke-width="1.2"/><text x="45" y="200" text-anchor="middle" fill="#94a3b8" font-size="7">D</text>
+          <rect x="15" y="44" width="30" height="20" rx="3" fill="#1e293b" stroke="#64748b" stroke-width="1.2"/><text x="30" y="58" text-anchor="middle" fill="#94a3b8" font-size="7">E</text>
+          <circle r="5" fill="#38bdf8" opacity=".9">
+            <animate attributeName="cx" values="120;120;195" dur="2.5s" repeatCount="indefinite"/>
+            <animate attributeName="cy" values="22;110;195" dur="2.5s" repeatCount="indefinite"/>
+          </circle>
+        </svg>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Ring Topology</h3>
+      <div class="diagram">
+        <svg width="180" height="170" viewBox="0 0 180 170">
+          <circle cx="90" cy="85" r="55" fill="none" stroke="#475569" stroke-width="2" stroke-dasharray="6 4"/>
+          <circle cx="90" cy="30" r="12" fill="#1e293b" stroke="#a78bfa" stroke-width="2"/><text x="90" y="34" text-anchor="middle" fill="#e2e8f0" font-size="9">A</text>
+          <circle cx="143" cy="112" r="12" fill="#1e293b" stroke="#a78bfa" stroke-width="2"/><text x="143" y="116" text-anchor="middle" fill="#e2e8f0" font-size="9">B</text>
+          <circle cx="37" cy="112" r="12" fill="#1e293b" stroke="#a78bfa" stroke-width="2"/><text x="37" y="116" text-anchor="middle" fill="#e2e8f0" font-size="9">C</text>
+          <text x="90" y="162" text-anchor="middle" fill="#64748b" font-size="10">Data flows in one direction</text>
+        </svg>
+      </div>
+      <p>Devices form a closed loop. Data passes through each node until it reaches the destination. One failure can break the ring.</p>
+      <p class="anim-label">&#9654; How Data Flows</p>
+      <div class="anim-diagram">
+        <svg width="200" height="180" viewBox="0 0 200 180">
+          <circle cx="100" cy="90" r="60" fill="none" stroke="#334155" stroke-width="2"/>
+          <circle cx="100" cy="30" r="12" fill="#1e293b" stroke="#a78bfa" stroke-width="2"/><text x="100" y="34" text-anchor="middle" fill="#e2e8f0" font-size="9">A</text>
+          <circle cx="152" cy="120" r="12" fill="#1e293b" stroke="#a78bfa" stroke-width="2"/><text x="152" y="124" text-anchor="middle" fill="#e2e8f0" font-size="9">B</text>
+          <circle cx="48" cy="120" r="12" fill="#1e293b" stroke="#a78bfa" stroke-width="2"/><text x="48" y="124" text-anchor="middle" fill="#e2e8f0" font-size="9">C</text>
+          <circle r="6" fill="#a78bfa" opacity=".9">
+            <animate attributeName="cx" values="100;152;48;100" dur="3s" repeatCount="indefinite"/>
+            <animate attributeName="cy" values="30;120;120;30" dur="3s" repeatCount="indefinite"/>
+          </circle>
+        </svg>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Mesh Topology</h3>
+      <div class="diagram">
+        <svg width="220" height="200" viewBox="0 0 220 200">
+          <!-- pentagon positions: top(110,20), top-right(200,80), bottom-right(165,170), bottom-left(55,170), top-left(20,80) -->
+          <!-- all interconnection lines -->
+          <line x1="110" y1="20" x2="200" y2="80" stroke="#475569" stroke-width="1.2"/>
+          <line x1="110" y1="20" x2="165" y2="170" stroke="#475569" stroke-width="1.2"/>
+          <line x1="110" y1="20" x2="55" y2="170" stroke="#475569" stroke-width="1.2"/>
+          <line x1="110" y1="20" x2="20" y2="80" stroke="#475569" stroke-width="1.2"/>
+          <line x1="200" y1="80" x2="165" y2="170" stroke="#475569" stroke-width="1.2"/>
+          <line x1="200" y1="80" x2="55" y2="170" stroke="#475569" stroke-width="1.2"/>
+          <line x1="200" y1="80" x2="20" y2="80" stroke="#475569" stroke-width="1.2"/>
+          <line x1="165" y1="170" x2="55" y2="170" stroke="#475569" stroke-width="1.2"/>
+          <line x1="165" y1="170" x2="20" y2="80" stroke="#475569" stroke-width="1.2"/>
+          <line x1="55" y1="170" x2="20" y2="80" stroke="#475569" stroke-width="1.2"/>
+          <!-- nodes -->
+          <circle cx="110" cy="20" r="12" fill="#1e293b" stroke="#f97316" stroke-width="2"/><text x="110" y="24" text-anchor="middle" fill="#e2e8f0" font-size="9">A</text>
+          <circle cx="200" cy="80" r="12" fill="#1e293b" stroke="#f97316" stroke-width="2"/><text x="200" y="84" text-anchor="middle" fill="#e2e8f0" font-size="9">B</text>
+          <circle cx="165" cy="170" r="12" fill="#1e293b" stroke="#f97316" stroke-width="2"/><text x="165" y="174" text-anchor="middle" fill="#e2e8f0" font-size="9">C</text>
+          <circle cx="55" cy="170" r="12" fill="#1e293b" stroke="#f97316" stroke-width="2"/><text x="55" y="174" text-anchor="middle" fill="#e2e8f0" font-size="9">D</text>
+          <circle cx="20" cy="80" r="12" fill="#1e293b" stroke="#f97316" stroke-width="2"/><text x="20" y="84" text-anchor="middle" fill="#e2e8f0" font-size="9">E</text>
+          <text x="110" y="198" text-anchor="middle" fill="#64748b" font-size="9">Full Mesh — every node linked to every other</text>
+        </svg>
+      </div>
+      <p>Every device is connected to every other device. Very reliable (if one link fails, data takes another path) but expensive.</p>
+      <p class="anim-label">&#9654; How Data Flows</p>
+      <div class="anim-diagram">
+        <svg width="240" height="200" viewBox="0 0 240 200">
+          <line x1="120" y1="20" x2="220" y2="80" stroke="#334155" stroke-width="1"/>
+          <line x1="120" y1="20" x2="180" y2="180" stroke="#334155" stroke-width="1"/>
+          <line x1="120" y1="20" x2="60" y2="180" stroke="#334155" stroke-width="1"/>
+          <line x1="120" y1="20" x2="20" y2="80" stroke="#334155" stroke-width="1"/>
+          <line x1="220" y1="80" x2="180" y2="180" stroke="#334155" stroke-width="1"/>
+          <line x1="220" y1="80" x2="60" y2="180" stroke="#334155" stroke-width="1"/>
+          <line x1="220" y1="80" x2="20" y2="80" stroke="#334155" stroke-width="1"/>
+          <line x1="180" y1="180" x2="60" y2="180" stroke="#334155" stroke-width="1"/>
+          <line x1="180" y1="180" x2="20" y2="80" stroke="#334155" stroke-width="1"/>
+          <line x1="60" y1="180" x2="20" y2="80" stroke="#334155" stroke-width="1"/>
+          <circle cx="120" cy="20" r="11" fill="#1e293b" stroke="#f97316" stroke-width="1.5"/><text x="120" y="24" text-anchor="middle" fill="#e2e8f0" font-size="8">A</text>
+          <circle cx="220" cy="80" r="11" fill="#1e293b" stroke="#f97316" stroke-width="1.5"/><text x="220" y="84" text-anchor="middle" fill="#e2e8f0" font-size="8">B</text>
+          <circle cx="180" cy="180" r="11" fill="#1e293b" stroke="#f97316" stroke-width="1.5"/><text x="180" y="184" text-anchor="middle" fill="#e2e8f0" font-size="8">C</text>
+          <circle cx="60" cy="180" r="11" fill="#1e293b" stroke="#f97316" stroke-width="1.5"/><text x="60" y="184" text-anchor="middle" fill="#e2e8f0" font-size="8">D</text>
+          <circle cx="20" cy="80" r="11" fill="#1e293b" stroke="#f97316" stroke-width="1.5"/><text x="20" y="84" text-anchor="middle" fill="#e2e8f0" font-size="8">E</text>
+          <!-- direct path A to C -->
+          <circle r="5" fill="#f97316" opacity=".9">
+            <animate attributeName="cx" values="120;180" dur="1.8s" repeatCount="indefinite"/>
+            <animate attributeName="cy" values="20;180" dur="1.8s" repeatCount="indefinite"/>
+          </circle>
+          <!-- alternate path A to C via B -->
+          <circle r="4" fill="#f97316" opacity=".5">
+            <animate attributeName="cx" values="120;220;180" dur="3s" repeatCount="indefinite"/>
+            <animate attributeName="cy" values="20;80;180" dur="3s" repeatCount="indefinite"/>
+          </circle>
+        </svg>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Tree Topology</h3>
+      <div class="diagram">
+        <svg width="220" height="160" viewBox="0 0 220 160">
+          <line x1="110" y1="20" x2="110" y2="50" stroke="#475569" stroke-width="1.5"/>
+          <line x1="110" y1="50" x2="50" y2="90" stroke="#475569" stroke-width="1.5"/>
+          <line x1="110" y1="50" x2="170" y2="90" stroke="#475569" stroke-width="1.5"/>
+          <line x1="50" y1="90" x2="25" y2="130" stroke="#475569" stroke-width="1"/>
+          <line x1="50" y1="90" x2="75" y2="130" stroke="#475569" stroke-width="1"/>
+          <line x1="170" y1="90" x2="145" y2="130" stroke="#475569" stroke-width="1"/>
+          <line x1="170" y1="90" x2="195" y2="130" stroke="#475569" stroke-width="1"/>
+          <circle cx="110" cy="20" r="12" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/><text x="110" y="24" text-anchor="middle" fill="#38bdf8" font-size="8">ROOT</text>
+          <circle cx="50" cy="90" r="10" fill="#1e293b" stroke="#94a3b8" stroke-width="1.5"/><text x="50" y="94" text-anchor="middle" fill="#e2e8f0" font-size="8">SW</text>
+          <circle cx="170" cy="90" r="10" fill="#1e293b" stroke="#94a3b8" stroke-width="1.5"/><text x="170" y="94" text-anchor="middle" fill="#e2e8f0" font-size="8">SW</text>
+          <circle cx="25" cy="130" r="8" fill="#1e293b" stroke="#64748b" stroke-width="1"/><text x="25" y="133" text-anchor="middle" fill="#94a3b8" font-size="7">PC</text>
+          <circle cx="75" cy="130" r="8" fill="#1e293b" stroke="#64748b" stroke-width="1"/><text x="75" y="133" text-anchor="middle" fill="#94a3b8" font-size="7">PC</text>
+          <circle cx="145" cy="130" r="8" fill="#1e293b" stroke="#64748b" stroke-width="1"/><text x="145" y="133" text-anchor="middle" fill="#94a3b8" font-size="7">PC</text>
+          <circle cx="195" cy="130" r="8" fill="#1e293b" stroke="#64748b" stroke-width="1"/><text x="195" y="133" text-anchor="middle" fill="#94a3b8" font-size="7">PC</text>
+        </svg>
+      </div>
+      <p>A hierarchy of star networks. A root node connects to groups, which connect to devices. Good for large networks.</p>
+      <p class="anim-label">&#9654; How Data Flows</p>
+      <div class="anim-diagram">
+        <svg width="220" height="160" viewBox="0 0 220 160">
+          <line x1="110" y1="20" x2="110" y2="50" stroke="#334155" stroke-width="1.5"/>
+          <line x1="110" y1="50" x2="50" y2="90" stroke="#334155" stroke-width="1.5"/>
+          <line x1="110" y1="50" x2="170" y2="90" stroke="#334155" stroke-width="1.5"/>
+          <line x1="50" y1="90" x2="25" y2="130" stroke="#334155" stroke-width="1"/>
+          <line x1="50" y1="90" x2="75" y2="130" stroke="#334155" stroke-width="1"/>
+          <line x1="170" y1="90" x2="145" y2="130" stroke="#334155" stroke-width="1"/>
+          <line x1="170" y1="90" x2="195" y2="130" stroke="#334155" stroke-width="1"/>
+          <circle cx="110" cy="20" r="10" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/><text x="110" y="24" text-anchor="middle" fill="#38bdf8" font-size="7">ROOT</text>
+          <circle cx="50" cy="90" r="8" fill="#1e293b" stroke="#64748b" stroke-width="1"/><text x="50" y="93" text-anchor="middle" fill="#94a3b8" font-size="7">SW</text>
+          <circle cx="170" cy="90" r="8" fill="#1e293b" stroke="#64748b" stroke-width="1"/><text x="170" y="93" text-anchor="middle" fill="#94a3b8" font-size="7">SW</text>
+          <circle cx="25" cy="130" r="7" fill="#1e293b" stroke="#475569" stroke-width="1"/>
+          <circle cx="75" cy="130" r="7" fill="#1e293b" stroke="#475569" stroke-width="1"/>
+          <circle cx="145" cy="130" r="7" fill="#1e293b" stroke="#475569" stroke-width="1"/>
+          <circle cx="195" cy="130" r="7" fill="#1e293b" stroke="#475569" stroke-width="1"/>
+          <circle r="5" fill="#38bdf8" opacity=".9">
+            <animate attributeName="cx" values="110;110;50;25" dur="2.5s" repeatCount="indefinite"/>
+            <animate attributeName="cy" values="20;50;90;130" dur="2.5s" repeatCount="indefinite"/>
+          </circle>
+        </svg>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Hybrid Topology</h3>
+      <div class="diagram">
+        <svg width="260" height="160" viewBox="0 0 260 160">
+          <circle cx="55" cy="80" r="12" fill="#38bdf8" opacity=".2" stroke="#38bdf8" stroke-width="1.5"/>
+          <line x1="55" y1="80" x2="20" y2="30" stroke="#475569" stroke-width="1"/><circle cx="20" cy="30" r="8" fill="#1e293b" stroke="#94a3b8" stroke-width="1.2"/>
+          <line x1="55" y1="80" x2="20" y2="130" stroke="#475569" stroke-width="1"/><circle cx="20" cy="130" r="8" fill="#1e293b" stroke="#94a3b8" stroke-width="1.2"/>
+          <line x1="55" y1="80" x2="90" y2="30" stroke="#475569" stroke-width="1"/><circle cx="90" cy="30" r="8" fill="#1e293b" stroke="#94a3b8" stroke-width="1.2"/>
+          <text x="55" y="84" text-anchor="middle" fill="#38bdf8" font-size="7" font-weight="600">SW1</text>
+          <line x1="90" y1="80" x2="170" y2="80" stroke="#f97316" stroke-width="3"/>
+          <text x="130" y="74" text-anchor="middle" fill="#f97316" font-size="8" font-weight="600">BUS</text>
+          <circle cx="200" cy="80" r="12" fill="#a78bfa" opacity=".2" stroke="#a78bfa" stroke-width="1.5"/>
+          <line x1="200" y1="80" x2="170" y2="30" stroke="#475569" stroke-width="1"/><circle cx="170" cy="30" r="8" fill="#1e293b" stroke="#94a3b8" stroke-width="1.2"/>
+          <line x1="200" y1="80" x2="235" y2="30" stroke="#475569" stroke-width="1"/><circle cx="235" cy="30" r="8" fill="#1e293b" stroke="#94a3b8" stroke-width="1.2"/>
+          <line x1="200" y1="80" x2="235" y2="130" stroke="#475569" stroke-width="1"/><circle cx="235" cy="130" r="8" fill="#1e293b" stroke="#94a3b8" stroke-width="1.2"/>
+          <text x="200" y="84" text-anchor="middle" fill="#a78bfa" font-size="7" font-weight="600">SW2</text>
+          <text x="130" y="150" text-anchor="middle" fill="#64748b" font-size="9">Star + Bus + Star combined</text>
+        </svg>
+      </div>
+      <p>Combines two or more topologies. Flexible and scalable — used in real-world large networks.</p>
+      <p class="anim-label">&#9654; How Data Flows</p>
+      <div class="anim-diagram">
+        <svg width="280" height="100" viewBox="0 0 280 100">
+          <circle cx="50" cy="50" r="10" fill="#38bdf8" opacity=".15" stroke="#38bdf8" stroke-width="1.2"/>
+          <circle cx="15" cy="20" r="7" fill="#1e293b" stroke="#64748b" stroke-width="1"/><text x="15" y="23" text-anchor="middle" fill="#94a3b8" font-size="6">A</text>
+          <circle cx="15" cy="80" r="7" fill="#1e293b" stroke="#64748b" stroke-width="1"/><text x="15" y="83" text-anchor="middle" fill="#94a3b8" font-size="6">B</text>
+          <circle cx="85" cy="20" r="7" fill="#1e293b" stroke="#64748b" stroke-width="1"/><text x="85" y="23" text-anchor="middle" fill="#94a3b8" font-size="6">C</text>
+          <line x1="50" y1="50" x2="15" y2="20" stroke="#334155" stroke-width="1"/>
+          <line x1="50" y1="50" x2="15" y2="80" stroke="#334155" stroke-width="1"/>
+          <line x1="50" y1="50" x2="85" y2="20" stroke="#334155" stroke-width="1"/>
+          <text x="50" y="54" text-anchor="middle" fill="#38bdf8" font-size="7">SW1</text>
+          <line x1="85" y1="50" x2="195" y2="50" stroke="#f97316" stroke-width="2.5"/>
+          <circle cx="230" cy="50" r="10" fill="#a78bfa" opacity=".15" stroke="#a78bfa" stroke-width="1.2"/>
+          <circle cx="195" cy="20" r="7" fill="#1e293b" stroke="#64748b" stroke-width="1"/><text x="195" y="23" text-anchor="middle" fill="#94a3b8" font-size="6">D</text>
+          <circle cx="265" cy="20" r="7" fill="#1e293b" stroke="#64748b" stroke-width="1"/><text x="265" y="23" text-anchor="middle" fill="#94a3b8" font-size="6">E</text>
+          <circle cx="265" cy="80" r="7" fill="#1e293b" stroke="#64748b" stroke-width="1"/><text x="265" y="83" text-anchor="middle" fill="#94a3b8" font-size="6">F</text>
+          <line x1="230" y1="50" x2="195" y2="20" stroke="#334155" stroke-width="1"/>
+          <line x1="230" y1="50" x2="265" y2="20" stroke="#334155" stroke-width="1"/>
+          <line x1="230" y1="50" x2="265" y2="80" stroke="#334155" stroke-width="1"/>
+          <text x="230" y="54" text-anchor="middle" fill="#a78bfa" font-size="7">SW2</text>
+          <circle r="4" fill="#f97316" opacity=".9">
+            <animate attributeName="cx" values="15;50;85;195;230;265" dur="4s" repeatCount="indefinite"/>
+            <animate attributeName="cy" values="20;50;50;50;50;80" dur="4s" repeatCount="indefinite"/>
+          </circle>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TRANSMISSION ===== -->
+<section id="transmission">
+  <span class="section-label">Session 2</span>
+  <h2>Transmission Methods</h2>
+  <p class="intro">Transmission methods define <em>how</em> data is sent from one device to another across a network. They determine the direction and flow of communication.</p>
+
+  <div class="tx-grid">
+    <div class="tx-box">
+      <h3>Simplex</h3>
+      <p>Data flows in <strong>one direction only</strong>. The sender can only send, and the receiver can only receive. No feedback is possible.</p>
+      <div class="diagram">
+        <svg width="260" height="80" viewBox="0 0 260 80">
+          <rect x="10" y="22" width="70" height="34" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+          <text x="45" y="43" text-anchor="middle" fill="#38bdf8" font-size="11" font-weight="600">Sender</text>
+          <line x1="84" y1="39" x2="170" y2="39" stroke="#38bdf8" stroke-width="2.5"/>
+          <polygon points="170,32 185,39 170,46" fill="#38bdf8"/>
+          <rect x="190" y="22" width="70" height="34" rx="8" fill="#1e293b" stroke="#94a3b8" stroke-width="2"/>
+          <text x="225" y="43" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="600">Receiver</text>
+          <text x="130" y="72" text-anchor="middle" fill="#64748b" font-size="10">One way only &#8594;</text>
+        </svg>
+      </div>
+      <div class="example-box">
+        <h4>Real-Life Example</h4>
+        <p>TV broadcasting, radio, keyboard input to computer — you send or receive, never both.</p>
+      </div>
+    </div>
+
+    <div class="tx-box">
+      <h3>Half-Duplex</h3>
+      <p>Data can flow in <strong>both directions, but not at the same time</strong>. Devices take turns sending and receiving.</p>
+      <div class="diagram">
+        <svg width="260" height="80" viewBox="0 0 260 80">
+          <rect x="10" y="22" width="70" height="34" rx="8" fill="#1e293b" stroke="#a78bfa" stroke-width="2"/>
+          <text x="45" y="43" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">Device A</text>
+          <line x1="84" y1="33" x2="170" y2="33" stroke="#a78bfa" stroke-width="2"/>
+          <polygon points="170,28 182,33 170,38" fill="#a78bfa"/>
+          <line x1="170" y1="45" x2="84" y2="45" stroke="#a78bfa" stroke-width="2" stroke-dasharray="5 3"/>
+          <polygon points="84,40 72,45 84,50" fill="#a78bfa"/>
+          <rect x="190" y="22" width="70" height="34" rx="8" fill="#1e293b" stroke="#a78bfa" stroke-width="2"/>
+          <text x="225" y="43" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">Device B</text>
+          <text x="130" y="72" text-anchor="middle" fill="#64748b" font-size="10">&#8592; Both ways, one at a time &#8594;</text>
+        </svg>
+      </div>
+      <div class="example-box">
+        <h4>Real-Life Example</h4>
+        <p>Walkie-talkie — "Press to talk, release to listen." Only one person speaks at a time.</p>
+      </div>
+    </div>
+
+    <div class="tx-box">
+      <h3>Full-Duplex</h3>
+      <p>Data flows in <strong>both directions simultaneously</strong>. Both devices can send and receive at the same time.</p>
+      <div class="diagram">
+        <svg width="260" height="80" viewBox="0 0 260 80">
+          <rect x="10" y="22" width="70" height="34" rx="8" fill="#1e293b" stroke="#f97316" stroke-width="2"/>
+          <text x="45" y="43" text-anchor="middle" fill="#f97316" font-size="10" font-weight="600">Device A</text>
+          <line x1="84" y1="33" x2="170" y2="33" stroke="#f97316" stroke-width="2"/>
+          <polygon points="170,28 182,33 170,38" fill="#f97316"/>
+          <line x1="170" y1="45" x2="84" y2="45" stroke="#f97316" stroke-width="2"/>
+          <polygon points="84,40 72,45 84,50" fill="#f97316"/>
+          <rect x="190" y="22" width="70" height="34" rx="8" fill="#1e293b" stroke="#f97316" stroke-width="2"/>
+          <text x="225" y="43" text-anchor="middle" fill="#f97316" font-size="10" font-weight="600">Device B</text>
+          <text x="130" y="72" text-anchor="middle" fill="#64748b" font-size="10">&#8596; Both ways at the same time &#8596;</text>
+        </svg>
+      </div>
+      <div class="example-box">
+        <h4>Real-Life Example</h4>
+        <p>Phone calls — both people can talk and hear at the same time. Fastest and most efficient.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CASTING ===== -->
+<section id="casting">
+  <span class="section-label">Session 3</span>
+  <h2>What is Casting?</h2>
+  <p class="intro">Casting is the method used to send data to one or more destinations on a network. It determines <em>who</em> receives the data you send.</p>
+
+  <div class="cast-grid">
+    <div class="cast-card">
+      <h3>Unicast (One-to-One)</h3>
+      <p>Data is sent from <strong>one sender</strong> to <strong>one specific receiver</strong>. This is the most common type of communication on networks.</p>
+      <div class="diagram">
+        <svg width="260" height="130" viewBox="0 0 260 130">
+          <circle cx="50" cy="65" r="22" fill="#38bdf8" opacity=".12" stroke="#38bdf8" stroke-width="2"/>
+          <text x="50" y="61" text-anchor="middle" fill="#38bdf8" font-size="9" font-weight="700">SOURCE</text>
+          <text x="50" y="73" text-anchor="middle" fill="#38bdf8" font-size="18">&#128187;</text>
+          <line x1="74" y1="65" x2="155" y2="65" stroke="#38bdf8" stroke-width="2.5"/>
+          <polygon points="155,58 170,65 155,72" fill="#38bdf8"/>
+          <circle cx="200" cy="65" r="22" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+          <text x="200" y="70" text-anchor="middle" fill="#e2e8f0" font-size="18">&#128187;</text>
+          <circle cx="200" cy="15" r="12" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+          <text x="200" y="19" text-anchor="middle" fill="#475569" font-size="10">&#128187;</text>
+          <circle cx="200" cy="115" r="12" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+          <text x="200" y="119" text-anchor="middle" fill="#475569" font-size="10">&#128187;</text>
+          <text x="130" y="100" text-anchor="middle" fill="#64748b" font-size="11" font-weight="600">1 &#8594; 1</text>
+        </svg>
+      </div>
+      <p class="anim-label">&#9654; How It Works</p>
+      <div class="anim-diagram">
+        <svg width="280" height="80" viewBox="0 0 280 80">
+          <circle cx="40" cy="40" r="14" fill="#38bdf8" opacity=".15" stroke="#38bdf8" stroke-width="1.5"/>
+          <text x="40" y="44" text-anchor="middle" fill="#38bdf8" font-size="8" font-weight="600">SRC</text>
+          <line x1="56" y1="40" x2="140" y2="40" stroke="#334155" stroke-width="1.5"/>
+          <circle cx="170" cy="40" r="14" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+          <text x="170" y="44" text-anchor="middle" fill="#e2e8f0" font-size="8">PC1</text>
+          <circle cx="170" cy="10" r="8" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+          <text x="170" y="13" text-anchor="middle" fill="#475569" font-size="6">PC2</text>
+          <circle cx="170" cy="70" r="8" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+          <text x="170" y="73" text-anchor="middle" fill="#475569" font-size="6">PC3</text>
+          <circle r="5" fill="#38bdf8" opacity=".9">
+            <animate attributeName="cx" values="40;170" dur="1.5s" repeatCount="indefinite"/>
+            <animate attributeName="cy" values="40;40" dur="1.5s" repeatCount="indefinite"/>
+          </circle>
+        </svg>
+      </div>
+      <div class="example-box">
+        <h4>Real-Life Example</h4>
+        <p>Browsing a website — your PC connects to one specific web server to load a page.</p>
+      </div>
+    </div>
+
+    <div class="cast-card broadcast">
+      <h3>Broadcast (One-to-All)</h3>
+      <p>Data is sent from <strong>one sender</strong> to <strong>all devices</strong> on the network. Every device receives the message whether it needs it or not.</p>
+      <div class="diagram">
+        <svg width="260" height="150" viewBox="0 0 260 150">
+          <circle cx="50" cy="75" r="22" fill="#f97316" opacity=".12" stroke="#f97316" stroke-width="2"/>
+          <text x="50" y="71" text-anchor="middle" fill="#f97316" font-size="9" font-weight="700">SOURCE</text>
+          <text x="50" y="83" text-anchor="middle" fill="#f97316" font-size="18">&#128187;</text>
+          <line x1="74" y1="60" x2="160" y2="22" stroke="#f97316" stroke-width="1.8"/>
+          <polygon points="160,17 170,20 158,27" fill="#f97316"/>
+          <line x1="74" y1="75" x2="160" y2="75" stroke="#f97316" stroke-width="1.8"/>
+          <polygon points="160,69 172,75 160,81" fill="#f97316"/>
+          <line x1="74" y1="90" x2="160" y2="128" stroke="#f97316" stroke-width="1.8"/>
+          <polygon points="160,123 170,126 158,133" fill="#f97316"/>
+          <circle cx="200" cy="22" r="16" fill="#1e293b" stroke="#f97316" stroke-width="1.5"/>
+          <text x="200" y="27" text-anchor="middle" fill="#e2e8f0" font-size="14">&#128187;</text>
+          <circle cx="200" cy="75" r="16" fill="#1e293b" stroke="#f97316" stroke-width="1.5"/>
+          <text x="200" y="80" text-anchor="middle" fill="#e2e8f0" font-size="14">&#128187;</text>
+          <circle cx="200" cy="128" r="16" fill="#1e293b" stroke="#f97316" stroke-width="1.5"/>
+          <text x="200" y="133" text-anchor="middle" fill="#e2e8f0" font-size="14">&#128187;</text>
+          <text x="130" y="148" text-anchor="middle" fill="#64748b" font-size="11" font-weight="600">1 &#8594; All</text>
+        </svg>
+      </div>
+      <p class="anim-label">&#9654; How It Works</p>
+      <div class="anim-diagram">
+        <svg width="280" height="90" viewBox="0 0 280 90">
+          <circle cx="40" cy="45" r="14" fill="#f97316" opacity=".15" stroke="#f97316" stroke-width="1.5"/>
+          <text x="40" y="49" text-anchor="middle" fill="#f97316" font-size="8" font-weight="600">SRC</text>
+          <circle cx="180" cy="12" r="10" fill="#1e293b" stroke="#f97316" stroke-width="1.2"/>
+          <text x="180" y="16" text-anchor="middle" fill="#e2e8f0" font-size="7">PC1</text>
+          <circle cx="180" cy="45" r="10" fill="#1e293b" stroke="#f97316" stroke-width="1.2"/>
+          <text x="180" y="49" text-anchor="middle" fill="#e2e8f0" font-size="7">PC2</text>
+          <circle cx="180" cy="78" r="10" fill="#1e293b" stroke="#f97316" stroke-width="1.2"/>
+          <text x="180" y="82" text-anchor="middle" fill="#e2e8f0" font-size="7">PC3</text>
+          <line x1="56" y1="38" x2="168" y2="12" stroke="#334155" stroke-width="1"/>
+          <line x1="56" y1="45" x2="168" y2="45" stroke="#334155" stroke-width="1"/>
+          <line x1="56" y1="52" x2="168" y2="78" stroke="#334155" stroke-width="1"/>
+          <!-- packet to PC1 -->
+          <circle r="4" fill="#f97316" opacity=".9">
+            <animate attributeName="cx" values="40;180" dur="1.2s" repeatCount="indefinite"/>
+            <animate attributeName="cy" values="45;12" dur="1.2s" repeatCount="indefinite"/>
+          </circle>
+          <!-- packet to PC2 -->
+          <circle r="4" fill="#f97316" opacity=".9">
+            <animate attributeName="cx" values="40;180" dur="1.2s" repeatCount="indefinite" begin=".3s"/>
+            <animate attributeName="cy" values="45;45" dur="1.2s" repeatCount="indefinite" begin=".3s"/>
+          </circle>
+          <!-- packet to PC3 -->
+          <circle r="4" fill="#f97316" opacity=".9">
+            <animate attributeName="cx" values="40;180" dur="1.2s" repeatCount="indefinite" begin=".6s"/>
+            <animate attributeName="cy" values="45;78" dur="1.2s" repeatCount="indefinite" begin=".6s"/>
+          </circle>
+        </svg>
+      </div>
+      <div class="example-box">
+        <h4>Real-Life Example</h4>
+        <p>TV channel broadcasting — the signal goes to every TV in range, whether you're watching or not.</p>
+      </div>
+    </div>
+
+    <div class="cast-card multicast">
+      <h3>Multicast (One-to-Many)</h3>
+      <p>Data is sent from <strong>one sender</strong> to a <strong>specific group</strong> of receivers — only the ones who subscribed or are interested.</p>
+      <div class="diagram">
+        <svg width="260" height="150" viewBox="0 0 260 150">
+          <circle cx="50" cy="75" r="22" fill="#a78bfa" opacity=".12" stroke="#a78bfa" stroke-width="2"/>
+          <text x="50" y="71" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="700">SOURCE</text>
+          <text x="50" y="83" text-anchor="middle" fill="#a78bfa" font-size="18">&#128187;</text>
+          <line x1="74" y1="60" x2="160" y2="22" stroke="#a78bfa" stroke-width="1.8"/>
+          <polygon points="160,17 170,20 158,27" fill="#a78bfa"/>
+          <line x1="74" y1="90" x2="160" y2="128" stroke="#a78bfa" stroke-width="1.8"/>
+          <polygon points="160,123 170,126 158,133" fill="#a78bfa"/>
+          <line x1="74" y1="75" x2="160" y2="75" stroke="#334155" stroke-width="1" stroke-dasharray="4 3"/>
+          <circle cx="200" cy="22" r="16" fill="#1e293b" stroke="#a78bfa" stroke-width="1.5"/>
+          <text x="200" y="27" text-anchor="middle" fill="#e2e8f0" font-size="14">&#128187;</text>
+          <circle cx="200" cy="75" r="16" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+          <text x="200" y="80" text-anchor="middle" fill="#475569" font-size="14">&#128187;</text>
+          <text x="200" y="105" text-anchor="middle" fill="#475569" font-size="9">(not in group)</text>
+          <circle cx="200" cy="128" r="16" fill="#1e293b" stroke="#a78bfa" stroke-width="1.5"/>
+          <text x="200" y="133" text-anchor="middle" fill="#e2e8f0" font-size="14">&#128187;</text>
+          <text x="130" y="148" text-anchor="middle" fill="#64748b" font-size="11" font-weight="600">1 &#8594; Group</text>
+        </svg>
+      </div>
+      <p class="anim-label">&#9654; How It Works</p>
+      <div class="anim-diagram">
+        <svg width="280" height="90" viewBox="0 0 280 90">
+          <circle cx="40" cy="45" r="14" fill="#a78bfa" opacity=".15" stroke="#a78bfa" stroke-width="1.5"/>
+          <text x="40" y="49" text-anchor="middle" fill="#a78bfa" font-size="8" font-weight="600">SRC</text>
+          <circle cx="180" cy="12" r="10" fill="#1e293b" stroke="#a78bfa" stroke-width="1.2"/>
+          <text x="180" y="16" text-anchor="middle" fill="#e2e8f0" font-size="7">PC1</text>
+          <circle cx="180" cy="45" r="10" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+          <text x="180" y="49" text-anchor="middle" fill="#475569" font-size="7">PC2</text>
+          <circle cx="180" cy="78" r="10" fill="#1e293b" stroke="#a78bfa" stroke-width="1.2"/>
+          <text x="180" y="82" text-anchor="middle" fill="#e2e8f0" font-size="7">PC3</text>
+          <line x1="56" y1="38" x2="168" y2="12" stroke="#a78bfa" stroke-width="1"/>
+          <line x1="56" y1="45" x2="168" y2="45" stroke="#334155" stroke-width="1" stroke-dasharray="3 2"/>
+          <line x1="56" y1="52" x2="168" y2="78" stroke="#a78bfa" stroke-width="1"/>
+          <!-- packet to PC1 (group) -->
+          <circle r="4" fill="#a78bfa" opacity=".9">
+            <animate attributeName="cx" values="40;180" dur="1.5s" repeatCount="indefinite"/>
+            <animate attributeName="cy" values="45;12" dur="1.5s" repeatCount="indefinite"/>
+          </circle>
+          <!-- no packet to PC2 (not in group) -->
+          <!-- packet to PC3 (group) -->
+          <circle r="4" fill="#a78bfa" opacity=".9">
+            <animate attributeName="cx" values="40;180" dur="1.5s" repeatCount="indefinite" begin=".5s"/>
+            <animate attributeName="cy" values="45;78" dur="1.5s" repeatCount="indefinite" begin=".5s"/>
+          </circle>
+        </svg>
+      </div>
+      <div class="example-box">
+        <h4>Real-Life Example</h4>
+        <p>Live video conference — data is sent only to participants, not to everyone on the network.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ENDPOINT & END USER ===== -->
+<section id="endpoint">
+  <span class="section-label">Session 4</span>
+  <h2>Endpoint &amp; End User</h2>
+  <p class="intro">Every network communication involves devices and people. Understanding endpoints and end users tells you <em>what</em> is connected and <em>who</em> is using it.</p>
+
+  <div class="ep-grid">
+    <div class="ep-box">
+      <h3>What is an Endpoint?</h3>
+      <p>An endpoint is <strong>any device</strong> that can send or receive data on a network. It's the "end" of a communication path — where data starts or finishes.</p>
+      <div class="diagram">
+        <svg width="280" height="220" viewBox="0 0 280 220">
+          <!-- Server rack -->
+          <rect x="100" y="5" width="80" height="50" rx="6" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+          <rect x="106" y="11" width="68" height="10" rx="2" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+          <rect x="106" y="25" width="68" height="10" rx="2" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+          <rect x="106" y="39" width="68" height="10" rx="2" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+          <circle cx="115" cy="16" r="2" fill="#22c55e"/>
+          <circle cx="115" cy="30" r="2" fill="#22c55e"/>
+          <circle cx="115" cy="44" r="2" fill="#f97316"/>
+          <text x="140" y="60" text-anchor="middle" fill="#38bdf8" font-size="9" font-weight="600">SERVER</text>
+          <!-- Connection lines -->
+          <line x1="110" y1="55" x2="40" y2="100" stroke="#475569" stroke-width="1.5"/>
+          <line x1="140" y1="55" x2="140" y2="100" stroke="#475569" stroke-width="1.5"/>
+          <line x1="170" y1="55" x2="240" y2="100" stroke="#475569" stroke-width="1.5"/>
+          <line x1="140" y1="55" x2="60" y2="170" stroke="#475569" stroke-width="1" stroke-dasharray="4 2"/>
+          <line x1="140" y1="55" x2="220" y2="170" stroke="#475569" stroke-width="1" stroke-dasharray="4 2"/>
+          <!-- Laptop -->
+          <rect x="5" y="95" width="70" height="45" rx="5" fill="#1e293b" stroke="#94a3b8" stroke-width="1.5"/>
+          <rect x="10" y="100" width="60" height="28" rx="2" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+          <rect x="15" y="130" width="50" height="4" rx="1" fill="#334155"/>
+          <text x="40" y="118" text-anchor="middle" fill="#94a3b8" font-size="8">Laptop</text>
+          <!-- Phone -->
+          <rect x="105" y="95" width="40" height="55" rx="6" fill="#1e293b" stroke="#94a3b8" stroke-width="1.5"/>
+          <rect x="110" y="102" width="30" height="35" rx="2" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+          <circle cx="125" cy="143" r="3" fill="#334155"/>
+          <text x="125" y="121" text-anchor="middle" fill="#94a3b8" font-size="7">Phone</text>
+          <!-- Printer -->
+          <rect x="200" y="95" width="70" height="40" rx="5" fill="#1e293b" stroke="#94a3b8" stroke-width="1.5"/>
+          <rect x="210" y="100" width="50" height="5" rx="1" fill="#334155"/>
+          <rect x="205" y="108" width="60" height="20" rx="2" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+          <rect x="220" y="128" width="30" height="4" rx="1" fill="#94a3b8"/>
+          <text x="235" y="124" text-anchor="middle" fill="#94a3b8" font-size="7">Printer</text>
+          <!-- Tablet -->
+          <rect x="30" y="165" width="55" height="40" rx="5" fill="#1e293b" stroke="#94a3b8" stroke-width="1.5"/>
+          <rect x="35" y="170" width="45" height="25" rx="2" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+          <text x="57" y="186" text-anchor="middle" fill="#94a3b8" font-size="7">Tablet</text>
+          <!-- Smart TV -->
+          <rect x="185" y="165" width="70" height="45" rx="4" fill="#1e293b" stroke="#94a3b8" stroke-width="1.5"/>
+          <rect x="190" y="170" width="60" height="30" rx="2" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+          <rect x="210" y="200" width="20" height="5" rx="1" fill="#94a3b8"/>
+          <text x="220" y="190" text-anchor="middle" fill="#94a3b8" font-size="7">Smart TV</text>
+          <text x="140" y="218" text-anchor="middle" fill="#64748b" font-size="10">Each device = an endpoint</text>
+        </svg>
+      </div>
+      <div class="example-box">
+        <h4>Common Endpoints</h4>
+        <p>Computers, smartphones, tablets, servers, printers, smart TVs, IoT devices — anything connected to a network.</p>
+      </div>
+    </div>
+
+    <div class="ep-box">
+      <h3>What is an End User?</h3>
+      <p>The end user is the <strong>person</strong> who actually uses the device or service. They are the human behind the endpoint — the reason the network exists.</p>
+      <div class="diagram">
+        <svg width="280" height="240" viewBox="0 0 280 240">
+          <!-- Main person -->
+          <circle cx="140" cy="50" r="28" fill="#1e293b" stroke="#f97316" stroke-width="2.5"/>
+          <circle cx="130" cy="44" r="3" fill="#f97316"/>
+          <circle cx="150" cy="44" r="3" fill="#f97316"/>
+          <path d="M 130 58 Q 140 66 150 58" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round"/>
+          <line x1="140" y1="78" x2="140" y2="135" stroke="#f97316" stroke-width="2.5"/>
+          <line x1="140" y1="95" x2="105" y2="115" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="140" y1="95" x2="175" y2="115" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="140" y1="135" x2="115" y2="175" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="140" y1="135" x2="165" y2="175" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- Laptop in hand -->
+          <rect x="168" y="108" width="30" height="20" rx="3" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+          <rect x="170" y="110" width="26" height="12" rx="1" fill="#0f172a"/>
+          <line x1="175" y1="128" x2="191" y2="128" stroke="#38bdf8" stroke-width="1"/>
+          <!-- Wifi signal from laptop -->
+          <path d="M 205 105 Q 215 95 225 105" fill="none" stroke="#38bdf8" stroke-width="1.2" opacity=".6">
+            <animate attributeName="opacity" values=".3;.8;.3" dur="1.5s" repeatCount="indefinite"/>
+          </path>
+          <path d="M 200 98 Q 215 83 230 98" fill="none" stroke="#38bdf8" stroke-width="1.2" opacity=".4">
+            <animate attributeName="opacity" values=".2;.7;.2" dur="1.5s" repeatCount="indefinite" begin=".3s"/>
+          </path>
+          <!-- Role cards -->
+          <rect x="15" y="190" width="70" height="40" rx="8" fill="#1e293b" stroke="#94a3b8" stroke-width="1.2"/>
+          <text x="50" y="206" text-anchor="middle" fill="#94a3b8" font-size="16">&#127891;</text>
+          <text x="50" y="222" text-anchor="middle" fill="#94a3b8" font-size="8">Student</text>
+          <rect x="105" y="190" width="70" height="40" rx="8" fill="#1e293b" stroke="#94a3b8" stroke-width="1.2"/>
+          <text x="140" y="206" text-anchor="middle" fill="#94a3b8" font-size="16">&#127918;</text>
+          <text x="140" y="222" text-anchor="middle" fill="#94a3b8" font-size="8">Gamer</text>
+          <rect x="195" y="190" width="70" height="40" rx="8" fill="#1e293b" stroke="#94a3b8" stroke-width="1.2"/>
+          <text x="230" y="206" text-anchor="middle" fill="#94a3b8" font-size="16">&#128188;</text>
+          <text x="230" y="222" text-anchor="middle" fill="#94a3b8" font-size="8">Worker</text>
+          <!-- connecting lines to roles -->
+          <line x1="115" y1="175" x2="50" y2="190" stroke="#475569" stroke-width="1" stroke-dasharray="3 2"/>
+          <line x1="140" y1="175" x2="140" y2="190" stroke="#475569" stroke-width="1" stroke-dasharray="3 2"/>
+          <line x1="165" y1="175" x2="230" y2="190" stroke="#475569" stroke-width="1" stroke-dasharray="3 2"/>
+        </svg>
+      </div>
+      <div class="example-box">
+        <h4>Examples of End Users</h4>
+        <p>A student browsing the web, a gamer playing online, an employee on a video call — any person using a networked device.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>&copy; 2026 Network Topologies &mdash; Educational Reference</footer>
+
+</body>
+</html>

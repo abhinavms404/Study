@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Threat Intelligence Hub</title>
+    <style>
+        :root {
+            --bg-dark: #0a0e17; --bg-card: #111827; --accent-red: #ef4444;
+            --accent-cyan: #06b6d4; --accent-green: #10b981; --accent-purple: #8b5cf6;
+            --accent-orange: #f59e0b; --accent-pink: #ec4899; --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8; --border-color: #1e293b;
+            --glow-cyan: 0 0 20px rgba(6,182,212,0.3); --glow-red: 0 0 20px rgba(239,68,68,0.3);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-dark); color: var(--text-primary); line-height: 1.6;
+        }
+        body::before {
+            content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(6,182,212,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(239,68,68,0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(139,92,246,0.06) 0%, transparent 50%);
+            pointer-events: none; z-index: -1;
+        }
+
+        /* NAV */
+        nav {
+            position: fixed; top: 0; width: 100%;
+            background: rgba(10,14,23,0.95); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color); z-index: 1000; padding: 0.8rem 0;
+        }
+        .nav-container {
+            max-width: 1400px; margin: 0 auto; padding: 0 2rem;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .nav-logo {
+            font-size: 1.4rem; font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-red));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; text-decoration: none;
+        }
+        .nav-links { display: flex; gap: 0.3rem; list-style: none; flex-wrap: wrap; }
+        .nav-links a {
+            color: var(--text-secondary); text-decoration: none;
+            padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem;
+            font-weight: 500; transition: all 0.3s ease;
+        }
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--text-primary); background: rgba(6,182,212,0.1);
+        }
+
+        /* HERO */
+        .hero {
+            min-height: 100vh; display: flex; align-items: center;
+            justify-content: center; text-align: center; padding: 6rem 2rem 4rem;
+        }
+        .hero-content { max-width: 900px; }
+        .hero-badge {
+            display: inline-block; padding: 0.5rem 1.5rem;
+            background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);
+            border-radius: 50px; color: var(--accent-red); font-size: 0.85rem;
+            font-weight: 600; margin-bottom: 2rem; letter-spacing: 1px; text-transform: uppercase;
+        }
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 900;
+            line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: -2px;
+        }
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .hero p { font-size: 1.2rem; color: var(--text-secondary); max-width: 600px; margin: 0 auto 3rem; }
+        .hero-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem; max-width: 800px; margin: 0 auto;
+        }
+        .hero-stat {
+            padding: 1.5rem; background: var(--bg-card);
+            border: 1px solid var(--border-color); border-radius: 16px; text-align: center;
+        }
+        .hero-stat .number { font-size: 2rem; font-weight: 800; color: var(--accent-cyan); }
+        .hero-stat .label { font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-top: 0.3rem; }
+
+        /* SECTION */
+        .section { padding: 6rem 2rem; max-width: 1200px; margin: 0 auto; }
+        .section-header { text-align: center; margin-bottom: 4rem; }
+        .section-tag {
+            display: inline-block; padding: 0.4rem 1rem; border-radius: 50px;
+            font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 1rem;
+        }
+        .tag-red { background: rgba(239,68,68,0.15); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.3); }
+        .tag-orange { background: rgba(245,158,11,0.15); color: var(--accent-orange); border: 1px solid rgba(245,158,11,0.3); }
+        .tag-cyan { background: rgba(6,182,212,0.15); color: var(--accent-cyan); border: 1px solid rgba(6,182,212,0.3); }
+        .tag-green { background: rgba(16,185,129,0.15); color: var(--accent-green); border: 1px solid rgba(16,185,129,0.3); }
+        .tag-purple { background: rgba(139,92,246,0.15); color: var(--accent-purple); border: 1px solid rgba(139,92,246,0.3); }
+        .section-header h2 { font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; letter-spacing: -1px; margin-bottom: 1rem; }
+        .section-header p { color: var(--text-secondary); max-width: 700px; margin: 0 auto; font-size: 1.1rem; }
+
+        /* CARDS */
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+        .card {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 16px; padding: 2rem; transition: all 0.3s ease;
+            position: relative; overflow: hidden;
+        }
+        .card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .card:hover { border-color: rgba(6,182,212,0.3); transform: translateY(-4px); box-shadow: var(--glow-cyan); }
+        .card:hover::before { opacity: 1; }
+        .card-icon {
+            width: 50px; height: 50px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; margin-bottom: 1.2rem;
+        }
+        .card h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.8rem; }
+        .card p { color: var(--text-secondary); font-size: 0.9rem; }
+        .card .tag {
+            display: inline-block; padding: 0.2rem 0.6rem; border-radius: 50px;
+            font-size: 0.7rem; font-weight: 600; margin-top: 0.8rem;
+        }
+
+        /* DIAGRAM CONTAINER */
+        .diagram-container {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 16px; padding: 2.5rem; margin: 2rem 0;
+        }
+        .diagram-title {
+            font-size: 0.9rem; font-weight: 700; margin-bottom: 2rem;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .dt-red { color: var(--accent-red); }
+        .dt-orange { color: var(--accent-orange); }
+        .dt-cyan { color: var(--accent-cyan); }
+        .dt-green { color: var(--accent-green); }
+        .dt-purple { color: var(--accent-purple); }
+
+        /* BOTNET DIAGRAM */
+        .botnet-diagram { display: flex; flex-direction: column; align-items: center; gap: 2rem; padding: 1rem; }
+        .botnet-hub {
+            background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.05));
+            border: 2px solid var(--accent-red); border-radius: 50%;
+            width: 120px; height: 120px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            box-shadow: var(--glow-red);
+        }
+        .botnet-hub .icon { font-size: 2rem; }
+        .botnet-hub .label { font-size: 0.75rem; font-weight: 700; color: var(--accent-red); margin-top: 0.3rem; }
+        .botnet-lines { display: flex; gap: 2rem; position: relative; flex-wrap: wrap; justify-content: center; }
+        .botnet-lines::before {
+            content: ''; position: absolute; top: -2rem; left: 50%; transform: translateX(-50%);
+            width: 2px; height: 2rem; background: linear-gradient(to bottom, var(--accent-red), rgba(239,68,68,0.2));
+        }
+        .bot-unit { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+        .bot-icon {
+            width: 60px; height: 60px; background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.3); border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; transition: all 0.3s ease;
+        }
+        .bot-icon:hover { background: rgba(239,68,68,0.2); transform: translateY(-3px); }
+        .bot-label { font-size: 0.7rem; color: var(--text-secondary); }
+
+        /* BREACH FLOW */
+        .breach-flow { display: flex; flex-direction: column; gap: 1rem; max-width: 700px; margin: 0 auto; }
+        .breach-step {
+            display: flex; align-items: center; gap: 1.5rem; padding: 1.2rem 1.5rem;
+            border-radius: 12px; transition: all 0.3s ease;
+        }
+        .breach-step:hover { transform: translateX(8px); }
+        .bs-orange { background: rgba(245,158,11,0.05); border: 1px solid rgba(245,158,11,0.2); }
+        .bs-orange:hover { background: rgba(245,158,11,0.1); }
+        .bs-red { background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.2); }
+        .bs-red:hover { background: rgba(239,68,68,0.1); }
+        .breach-num {
+            width: 40px; height: 40px; min-width: 40px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 0.9rem;
+        }
+        .bn-orange { background: var(--accent-orange); color: var(--bg-dark); }
+        .bn-red { background: var(--accent-red); color: var(--bg-dark); }
+        .breach-step h4 { font-size: 0.95rem; margin-bottom: 0.2rem; }
+        .breach-step p { font-size: 0.8rem; color: var(--text-secondary); }
+        .breach-arrow { text-align: center; font-size: 1.2rem; opacity: 0.5; }
+        .ba-orange { color: var(--accent-orange); }
+        .ba-red { color: var(--accent-red); }
+
+        /* INFO GRID */
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+        .info-box {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 16px; padding: 2rem;
+        }
+        .info-box h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .info-box ul { list-style: none; }
+        .info-box ul li {
+            padding: 0.5rem 0; padding-left: 1.2rem; position: relative;
+            color: var(--text-secondary); font-size: 0.9rem;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+        .info-box ul li:last-child { border: none; }
+        .info-box ul li::before { content: '▸'; position: absolute; left: 0; color: var(--accent-cyan); }
+
+        /* THREAT STATS */
+        .threat-stats {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem; margin-bottom: 3rem;
+        }
+        .threat-stat {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 16px; padding: 2rem; text-align: center;
+            position: relative; overflow: hidden;
+        }
+        .threat-stat::before { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; }
+        .threat-stat:nth-child(1)::before { background: var(--accent-red); }
+        .threat-stat:nth-child(2)::before { background: var(--accent-purple); }
+        .threat-stat:nth-child(3)::before { background: var(--accent-cyan); }
+        .threat-stat:nth-child(4)::before { background: var(--accent-orange); }
+        .threat-stat .big-num { font-size: 2.5rem; font-weight: 900; line-height: 1; }
+        .threat-stat:nth-child(1) .big-num { color: var(--accent-red); }
+        .threat-stat:nth-child(2) .big-num { color: var(--accent-purple); }
+        .threat-stat:nth-child(3) .big-num { color: var(--accent-cyan); }
+        .threat-stat:nth-child(4) .big-num { color: var(--accent-orange); }
+        .threat-stat .stat-label { font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem; }
+
+        /* KILL CHAIN */
+        .kill-chain { display: flex; align-items: center; justify-content: center; gap: 0; flex-wrap: wrap; padding: 1rem 0; }
+        .kill-step { display: flex; align-items: center; gap: 0; }
+        .kill-box {
+            background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(139,92,246,0.1));
+            border: 1px solid rgba(16,185,129,0.3); border-radius: 12px;
+            padding: 1rem 1.2rem; text-align: center; min-width: 110px; transition: all 0.3s ease;
+        }
+        .kill-box:hover { transform: scale(1.05); box-shadow: var(--glow-cyan); }
+        .kill-box .step-num { font-size: 0.65rem; color: var(--accent-green); font-weight: 700; letter-spacing: 1px; }
+        .kill-box .step-name { font-size: 0.8rem; font-weight: 600; margin-top: 0.3rem; }
+        .kill-arrow { color: var(--accent-green); font-size: 1.2rem; padding: 0 0.3rem; opacity: 0.5; }
+
+        .lifecycle { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; }
+        .lifecycle-step {
+            position: relative; background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(16,185,129,0.02));
+            border: 1px solid rgba(16,185,129,0.2); border-radius: 12px;
+            padding: 1.5rem 1rem; text-align: center; transition: all 0.3s ease;
+        }
+        .lifecycle-step:hover { border-color: var(--accent-green); transform: translateY(-3px); }
+        .lifecycle-num {
+            position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+            background: var(--accent-green); color: var(--bg-dark);
+            width: 24px; height: 24px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; font-weight: 800;
+        }
+        .lifecycle-step h4 { font-size: 0.85rem; margin-top: 0.5rem; margin-bottom: 0.4rem; }
+        .lifecycle-step p { font-size: 0.7rem; color: var(--text-secondary); }
+
+        .defense-flow {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 1rem; max-width: 1000px; margin: 0 auto;
+        }
+        .defense-item {
+            background: rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.2);
+            border-radius: 12px; padding: 1.2rem; text-align: center; transition: all 0.3s ease;
+        }
+        .defense-item:hover { background: rgba(16,185,129,0.1); transform: translateY(-3px); }
+        .defense-item .stage { font-size: 0.65rem; color: var(--accent-green); font-weight: 700; letter-spacing: 1px; margin-bottom: 0.3rem; }
+        .defense-item h4 { font-size: 0.8rem; margin-bottom: 0.3rem; }
+        .defense-item p { font-size: 0.7rem; color: var(--text-secondary); }
+
+        /* ACTOR CARDS */
+        .actor-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
+        .actor-card {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 16px; padding: 2rem; position: relative;
+            overflow: hidden; transition: all 0.3s ease;
+        }
+        .actor-card::after {
+            content: ''; position: absolute; top: 0; right: 0;
+            width: 100px; height: 100px; border-radius: 0 16px 0 100%; opacity: 0.1;
+        }
+        .actor-card:hover { transform: translateY(-4px); box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+        .actor-card.state::after { background: var(--accent-red); }
+        .actor-card.criminal::after { background: var(--accent-purple); }
+        .actor-card.hacktivist::after { background: var(--accent-cyan); }
+        .actor-card.insider::after { background: var(--accent-orange); }
+        .actor-card.script::after { background: var(--accent-green); }
+        .actor-card.apt::after { background: var(--accent-pink); }
+        .actor-emoji { font-size: 2.5rem; margin-bottom: 1rem; }
+        .actor-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .actor-motive {
+            display: inline-block; padding: 0.25rem 0.75rem; border-radius: 50px;
+            font-size: 0.7rem; font-weight: 600; margin-bottom: 1rem;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .motive-political { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+        .motive-financial { background: rgba(139,92,246,0.15); color: var(--accent-purple); }
+        .motive-ideology { background: rgba(6,182,212,0.15); color: var(--accent-cyan); }
+        .motive-revenge { background: rgba(245,158,11,0.15); color: var(--accent-orange); }
+        .motive-thrill { background: rgba(16,185,129,0.15); color: var(--accent-green); }
+        .motive-spy { background: rgba(236,72,153,0.15); color: var(--accent-pink); }
+        .actor-details { list-style: none; }
+        .actor-details li {
+            padding: 0.4rem 0; font-size: 0.85rem; color: var(--text-secondary);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex; align-items: flex-start; gap: 0.5rem;
+        }
+        .actor-details li:last-child { border: none; }
+        .actor-details li::before { content: '›'; color: var(--accent-cyan); font-weight: bold; }
+
+        .matrix-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .matrix-table thead tr { border-bottom: 2px solid var(--border-color); }
+        .matrix-table th { padding: 1rem; text-align: left; color: var(--text-secondary); font-weight: 600; }
+        .matrix-table td { padding: 0.8rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .matrix-table tbody tr:hover { background: rgba(139,92,246,0.05); }
+        .bar { display: inline-block; height: 8px; border-radius: 4px; margin-right: 2px; }
+
+        /* TIMELINE */
+        .timeline { position: relative; max-width: 800px; margin: 0 auto; padding-left: 3rem; }
+        .timeline::before {
+            content: ''; position: absolute; left: 15px; top: 0; bottom: 0;
+            width: 2px; background: linear-gradient(to bottom, var(--accent-orange), rgba(245,158,11,0.1));
+        }
+        .timeline-item {
+            position: relative; margin-bottom: 2rem; padding: 1.5rem;
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 12px; transition: all 0.3s ease;
+        }
+        .timeline-item:hover { border-color: rgba(245,158,11,0.3); transform: translateX(4px); }
+        .timeline-item::before {
+            content: ''; position: absolute; left: -2.35rem; top: 1.8rem;
+            width: 12px; height: 12px; background: var(--accent-orange);
+            border-radius: 50%; border: 3px solid var(--bg-dark);
+        }
+        .timeline-item .year { font-size: 0.75rem; font-weight: 700; color: var(--accent-orange); letter-spacing: 1px; margin-bottom: 0.3rem; }
+        .timeline-item h4 { font-size: 1rem; margin-bottom: 0.3rem; }
+        .timeline-item p { font-size: 0.85rem; color: var(--text-secondary); }
+        .timeline-item .records {
+            display: inline-block; margin-top: 0.5rem; padding: 0.2rem 0.8rem;
+            background: rgba(245,158,11,0.1); border-radius: 50px;
+            font-size: 0.75rem; font-weight: 700; color: var(--accent-orange);
+        }
+
+        /* RADAR */
+        .radar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; max-width: 700px; margin: 0 auto; }
+        .radar-item {
+            background: rgba(6,182,212,0.05); border: 1px solid rgba(6,182,212,0.2);
+            border-radius: 12px; padding: 1.2rem; text-align: center; transition: all 0.3s ease;
+        }
+        .radar-item:hover { background: rgba(6,182,212,0.1); transform: scale(1.03); }
+        .radar-item .icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
+        .radar-item h4 { font-size: 0.85rem; margin-bottom: 0.3rem; }
+        .radar-item p { font-size: 0.7rem; color: var(--text-secondary); }
+        .radar-item .level {
+            display: inline-block; margin-top: 0.5rem; padding: 0.15rem 0.6rem;
+            border-radius: 50px; font-size: 0.65rem; font-weight: 700;
+        }
+        .level-critical { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+        .level-high { background: rgba(245,158,11,0.15); color: var(--accent-orange); }
+        .level-medium { background: rgba(16,185,129,0.15); color: var(--accent-green); }
+
+        .example-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+        .example-card {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 16px; padding: 2rem;
+        }
+        .example-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .example-card .group { font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.8rem; }
+        .example-card p { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+        .example-card .year {
+            display: inline-block; padding: 0.2rem 0.6rem; border-radius: 50px;
+            font-size: 0.7rem; font-weight: 700;
+            background: rgba(139,92,246,0.15); color: var(--accent-purple);
+        }
+
+        footer {
+            text-align: center; padding: 4rem 2rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary); font-size: 0.85rem;
+        }
+        footer span { color: var(--accent-cyan); font-weight: 600; }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .kill-chain { flex-direction: column; }
+            .kill-step { flex-direction: column; }
+            .kill-arrow { transform: rotate(90deg); }
+            .radar { grid-template-columns: repeat(2, 1fr); }
+            .botnet-lines { gap: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ==================== NAV ==================== -->
+<nav>
+    <div class="nav-container">
+        <a href="#home" class="nav-logo">⟨CyberThreat⟩</a>
+        <ul class="nav-links">
+            <li><a href="#home" class="active">Home</a></li>
+            <li><a href="#botnet">Botnets</a></li>
+            <li><a href="#breach">Data Breaches</a></li>
+            <li><a href="#landscape">Threat Landscape</a></li>
+            <li><a href="#killchain">Kill Chain</a></li>
+            <li><a href="#actors">Threat Actors</a></li>
+        </ul>
+    </div>
+</nav>
+
+<!-- ==================== HERO ==================== -->
+<section class="hero" id="home">
+    <div class="hero-content">
+        <div class="hero-badge">⚠ Threat Intelligence</div>
+        <h1>Understanding the <span>Cyber Threat</span> Landscape</h1>
+        <p>A comprehensive guide to modern cyber threats, attack methodologies, and the actors behind them.</p>
+        <div class="hero-grid">
+            <div class="hero-stat"><div class="number">3.4B</div><div class="label">Phishing Emails / Day</div></div>
+            <div class="hero-stat"><div class="number">$10.5T</div><div class="label">Cybercrime Cost by 2025</div></div>
+            <div class="hero-stat"><div class="number">277 Days</div><div class="label">Avg. Breach Identification</div></div>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== SESSION 01: BOTNETS ==================== -->
+<section class="section" id="botnet">
+    <div class="section-header">
+        <div class="section-tag tag-red">Session 01</div>
+        <h2>Botnets</h2>
+        <p>A botnet is a network of compromised computers (bots/zombies) controlled by a single attacker, used for DDoS attacks, spam, and data theft.</p>
+    </div>
+
+    <div class="diagram-container">
+        <div class="diagram-title dt-red">▸ Botnet Architecture</div>
+        <div class="botnet-diagram">
+            <div class="botnet-hub">
+                <div class="icon">🕷️</div>
+                <div class="label">BOTMASTER</div>
+            </div>
+            <div style="position:relative;">
+                <div style="width:2px;height:2rem;background:linear-gradient(to bottom,var(--accent-red),rgba(239,68,68,0.2));margin:0 auto;"></div>
+                <div style="text-align:center;color:var(--accent-red);font-size:0.7rem;font-weight:700;letter-spacing:1px;margin:0.5rem 0;">C&C SERVER</div>
+                <div style="text-align:center;color:var(--text-secondary);font-size:0.75rem;">Command & Control Channel</div>
+                <div style="width:400px;max-width:100%;height:2px;background:linear-gradient(90deg,transparent,var(--accent-red),transparent);margin:1rem auto;"></div>
+            </div>
+            <div class="botnet-lines">
+                <div class="bot-unit"><div class="bot-icon">💻</div><div class="bot-label">Infected PC</div></div>
+                <div class="bot-unit"><div class="bot-icon">📱</div><div class="bot-label">Mobile Bot</div></div>
+                <div class="bot-unit"><div class="bot-icon">🖥️</div><div class="bot-label">IoT Device</div></div>
+                <div class="bot-unit"><div class="bot-icon">☁️</div><div class="bot-label">Cloud VM</div></div>
+                <div class="bot-unit"><div class="bot-icon">📡</div><div class="bot-label">Router</div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-grid" style="margin-top:2rem;">
+        <div class="card">
+            <div class="card-icon" style="background:rgba(239,68,68,0.1);">🔴</div>
+            <h3>DDoS Attacks</h3>
+            <p>Botnets flood target servers with massive traffic, overwhelming them and causing service outages. Mirai botnet reached 1.2 Tbps attack volume.</p>
+        </div>
+        <div class="card">
+            <div class="card-icon" style="background:rgba(139,92,246,0.1);">📧</div>
+            <h3>Spam & Phishing</h3>
+            <p>Mass distribution of spam emails and phishing campaigns through thousands of compromised machines simultaneously.</p>
+        </div>
+        <div class="card">
+            <div class="card-icon" style="background:rgba(6,182,212,0.1);">💰</div>
+            <h3>Cryptomining</h3>
+            <p>Secretly using victims' computing resources to mine cryptocurrency, causing performance degradation and increased power costs.</p>
+        </div>
+        <div class="card">
+            <div class="card-icon" style="background:rgba(245,158,11,0.1);">🔑</div>
+            <h3>Credential Stuffing</h3>
+            <p>Using botnets to test stolen username/password pairs across thousands of sites, exploiting password reuse.</p>
+        </div>
+        <div class="card">
+            <div class="card-icon" style="background:rgba(16,185,129,0.1);">💳</div>
+            <h3>Click Fraud</h3>
+            <p>Automatically clicking online ads to generate fraudulent revenue for attackers, costing advertisers billions.</p>
+        </div>
+        <div class="card">
+            <div class="card-icon" style="background:rgba(236,72,153,0.1);">🔓</div>
+            <h3>Brute Force Attacks</h3>
+            <p>Distributing login attempts across botnet nodes to crack passwords without triggering rate limits.</p>
+        </div>
+    </div>
+
+    <div class="diagram-container" style="margin-top:2rem;">
+        <div class="diagram-title dt-red">▸ Botnet Infection Chain</div>
+        <div class="breach-flow">
+            <div class="breach-step bs-red"><div class="breach-num bn-red">1</div><div><h4>Initial Infection</h4><p>Malware delivered via phishing, exploit kits, or brute-force attacks on IoT devices</p></div></div>
+            <div class="breach-arrow ba-red">↓</div>
+            <div class="breach-step bs-red"><div class="breach-num bn-red">2</div><div><h4>Payload Execution</h4><p>Malware installs on device, establishes persistence and disables security tools</p></div></div>
+            <div class="breach-arrow ba-red">↓</div>
+            <div class="breach-step bs-red"><div class="breach-num bn-red">3</div><div><h4>C&C Connection</h4><p>Infected device contacts Command & Control server for instructions</p></div></div>
+            <div class="breach-arrow ba-red">↓</div>
+            <div class="breach-step bs-red"><div class="breach-num bn-red">4</div><div><h4>Botnet Army Ready</h4><p>Thousands of devices await commands from the botmaster</p></div></div>
+        </div>
+    </div>
+
+    <div class="info-grid" style="margin-top:2rem;">
+        <div class="info-box">
+            <h3>🤖 Notable Botnets</h3>
+            <ul>
+                <li><strong>Mirai (2016)</strong> — 600K+ IoT bots, attacked Dyn DNS</li>
+                <li><strong>Emotet (2014)</strong> — Banking trojan turned botnet-as-a-service</li>
+                <li><strong>TrickBot (2016)</strong> — Modular malware, 1M+ infected</li>
+                <li><strong>BazarLoader (2020)</strong> — Ryuk ransomware delivery</li>
+                <li><strong>Mozi (2019)</strong> — P2P botnet, DDoS & data theft</li>
+            </ul>
+        </div>
+        <div class="info-box">
+            <h3>🛡️ Defense Against Botnets</h3>
+            <ul>
+                <li>Change default passwords on IoT devices</li>
+                <li>Network segmentation & monitoring</li>
+                <li>DNS filtering to block C&C traffic</li>
+                <li>Regular firmware updates</li>
+                <li>Intrusion Detection Systems (IDS)</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== SESSION 02: DATA BREACHES ==================== -->
+<section class="section" id="breach">
+    <div class="section-header">
+        <div class="section-tag tag-orange">Session 02</div>
+        <h2>Data Breaches</h2>
+        <p>A data breach occurs when sensitive, protected, or confidential data is accessed, stolen, or disclosed by an unauthorized party.</p>
+    </div>
+
+    <div class="threat-stats">
+        <div class="threat-stat"><div class="big-num">$4.45M</div><div class="stat-label">Average Breach Cost</div></div>
+        <div class="threat-stat"><div class="big-num">277</div><div class="stat-label">Days to Identify Breach</div></div>
+        <div class="threat-stat"><div class="big-num">83%</div><div class="stat-label">Breaches by External Actors</div></div>
+        <div class="threat-stat"><div class="big-num">68%</div><div class="stat-label">Involve Human Error</div></div>
+    </div>
+
+    <div class="diagram-container">
+        <div class="diagram-title dt-orange">▸ Anatomy of a Data Breach</div>
+        <div class="breach-flow">
+            <div class="breach-step bs-orange"><div class="breach-num bn-orange">1</div><div><h4>Reconnaissance</h4><p>Attacker gathers intel on target: employees, technologies, vulnerabilities</p></div></div>
+            <div class="breach-arrow ba-orange">↓</div>
+            <div class="breach-step bs-orange"><div class="breach-num bn-orange">2</div><div><h4>Weaponization</h4><p>Creating malware, crafting phishing emails, or finding exploits</p></div></div>
+            <div class="breach-arrow ba-orange">↓</div>
+            <div class="breach-step bs-orange"><div class="breach-num bn-orange">3</div><div><h4>Initial Access</h4><p>Phishing click, stolen credentials, or exploiting a vulnerability</p></div></div>
+            <div class="breach-arrow ba-orange">↓</div>
+            <div class="breach-step bs-orange"><div class="breach-num bn-orange">4</div><div><h4>Lateral Movement</h4><p>Attacker moves through network, escalating privileges</p></div></div>
+            <div class="breach-arrow ba-orange">↓</div>
+            <div class="breach-step bs-orange"><div class="breach-num bn-orange">5</div><div><h4>Data Exfiltration</h4><p>Sensitive data copied and transmitted to attacker's infrastructure</p></div></div>
+            <div class="breach-arrow ba-orange">↓</div>
+            <div class="breach-step bs-orange"><div class="breach-num bn-orange">6</div><div><h4>Cover Tracks</h4><p>Logs cleared, backdoors installed for future access</p></div></div>
+        </div>
+    </div>
+
+    <div class="info-grid" style="margin-top:2rem;">
+        <div class="info-box">
+            <h3>🔓 Common Attack Vectors</h3>
+            <ul>
+                <li>Phishing & Social Engineering</li>
+                <li>Stolen/Weak Credentials</li>
+                <li>Cloud Misconfigurations</li>
+                <li>Zero-Day Exploits</li>
+                <li>Insider Threats</li>
+                <li>Supply Chain Attacks</li>
+                <li>Unpatched Software</li>
+            </ul>
+        </div>
+        <div class="info-box">
+            <h3>🛡️ Prevention Measures</h3>
+            <ul>
+                <li>Multi-Factor Authentication (MFA)</li>
+                <li>Encryption at rest and in transit</li>
+                <li>Regular security audits</li>
+                <li>Employee security training</li>
+                <li>Network segmentation</li>
+                <li>Incident response planning</li>
+                <li>Zero Trust Architecture</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="diagram-container" style="margin-top:2rem;">
+        <div class="diagram-title dt-orange">▸ Major Breaches Timeline</div>
+        <div class="timeline">
+            <div class="timeline-item"><div class="year">2013</div><h4>Yahoo</h4><p>All 3 billion accounts compromised. Names, emails, passwords, security questions stolen.</p><span class="records">3 Billion Accounts</span></div>
+            <div class="timeline-item"><div class="year">2017</div><h4>Equifax</h4><p>Apache Struit vulnerability exploited. Social security numbers of 147 million people exposed.</p><span class="records">147 Million People</span></div>
+            <div class="timeline-item"><div class="year">2018</div><h4>Marriott International</h4><p>Starwood guest database compromised. 5 years of undetected access. Passport numbers stolen.</p><span class="records">500 Million Guests</span></div>
+            <div class="timeline-item"><div class="year">2019</div><h4>Facebook</h4><p>533M user records exposed on unprotected AWS server. Phone numbers, IDs, locations leaked.</p><span class="records">533 Million Records</span></div>
+            <div class="timeline-item"><div class="year">2021</div><h4>Colonial Pipeline</h4><p>Ransomware attack shut down largest US fuel pipeline. $4.4M ransom paid.</p><span class="records">$4.4M Ransom</span></div>
+            <div class="timeline-item"><div class="year">2023</div><h4>MGM Resorts</h4><p>Social engineering attack. 10-day operational shutdown across hotels and casinos.</p><span class="records">$100M+ Loss</span></div>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== SESSION 03: THREAT LANDSCAPE ==================== -->
+<section class="section" id="landscape">
+    <div class="section-header">
+        <div class="section-tag tag-cyan">Session 03</div>
+        <h2>Cyber Threat Landscape</h2>
+        <p>The evolving ecosystem of cyber threats, vulnerabilities, and attack surfaces that organizations face today.</p>
+    </div>
+
+    <div class="threat-stats">
+        <div class="threat-stat"><div class="big-num">68%</div><div class="stat-label">Breaches involve human element</div></div>
+        <div class="threat-stat"><div class="big-num">97%</div><div class="stat-label">Attacks target cloud assets</div></div>
+        <div class="threat-stat"><div class="big-num">236%</div><div class="stat-label">Ransomware growth rate</div></div>
+        <div class="threat-stat"><div class="big-num">$4.45M</div><div class="stat-label">Average breach cost</div></div>
+    </div>
+
+    <div class="card-grid">
+        <div class="card">
+            <div class="card-icon" style="background:rgba(239,68,68,0.1);">🎭</div>
+            <h3>Ransomware</h3>
+            <p>Malware that encrypts files and demands payment. Double extortion now standard: encrypt + exfiltrate. RaaS makes it accessible to low-skill actors.</p>
+            <span class="tag" style="background:rgba(239,68,68,0.15);color:var(--accent-red);">CRITICAL RISK</span>
+        </div>
+        <div class="card">
+            <div class="card-icon" style="background:rgba(139,92,246,0.1);">🎯</div>
+            <h3>Supply Chain Attacks</h3>
+            <p>Compromising trusted vendors/software to access thousands of targets. SolarWinds affected 18,000+ organizations including US government.</p>
+            <span class="tag" style="background:rgba(139,92,246,0.15);color:var(--accent-purple);">HIGH RISK</span>
+        </div>
+        <div class="card">
+            <div class="card-icon" style="background:rgba(6,182,212,0.1);">☁️</div>
+            <h3>Cloud Threats</h3>
+            <p>Misconfigurations, API vulnerabilities, container escapes, and credential leaks expose cloud environments to attacks.</p>
+            <span class="tag" style="background:rgba(6,182,212,0.15);color:var(--accent-cyan);">HIGH RISK</span>
+        </div>
+        <div class="card">
+            <div class="card-icon" style="background:rgba(16,185,129,0.1);">🧠</div>
+            <h3>AI-Powered Attacks</h3>
+            <p>Deepfake phishing, automated vulnerability discovery, evasion of security tools using machine learning techniques.</p>
+            <span class="tag" style="background:rgba(16,185,129,0.15);color:var(--accent-green);">EMERGING</span>
+        </div>
+        <div class="card">
+            <div class="card-icon" style="background:rgba(245,158,11,0.1);">📱</div>
+            <h3>Mobile Threats</h3>
+            <p>Malicious apps, SMS phishing (smishing), Wi-Fi attacks, and mobile spyware targeting both Android and iOS devices.</p>
+            <span class="tag" style="background:rgba(245,158,11,0.15);color:var(--accent-orange);">GROWING</span>
+        </div>
+        <div class="card">
+            <div class="card-icon" style="background:rgba(236,72,153,0.1);">🌐</div>
+            <h3>IoT Vulnerabilities</h3>
+            <p>Billions of unpatched devices with weak security. Used as entry points and for massive botnet operations.</p>
+            <span class="tag" style="background:rgba(236,72,153,0.15);color:var(--accent-pink);">HIGH RISK</span>
+        </div>
+    </div>
+
+    <div class="diagram-container" style="margin-top:2rem;">
+        <div class="diagram-title dt-cyan">▸ Attack Surface Radar</div>
+        <div class="radar">
+            <div class="radar-item"><div class="icon">📧</div><h4>Email</h4><p>Phishing, BEC, malware</p><span class="level level-critical">CRITICAL</span></div>
+            <div class="radar-item"><div class="icon">☁️</div><h4>Cloud</h4><p>Misconfigs, API abuse</p><span class="level level-critical">CRITICAL</span></div>
+            <div class="radar-item"><div class="icon">👤</div><h4>Identity</h4><p>Credential theft, MFA bypass</p><span class="level level-critical">CRITICAL</span></div>
+            <div class="radar-item"><div class="icon">💻</div><h4>Endpoints</h4><p>Ransomware, fileless malware</p><span class="level level-high">HIGH</span></div>
+            <div class="radar-item"><div class="icon">🌐</div><h4>Web Apps</h4><p>Injection, XSS, SSRF</p><span class="level level-high">HIGH</span></div>
+            <div class="radar-item"><div class="icon">📱</div><h4>Mobile</h4><p>Spyware, malicious apps</p><span class="level level-medium">MEDIUM</span></div>
+            <div class="radar-item"><div class="icon">🏭</div><h4>OT/ICS</h4><p>SCADA, industrial control</p><span class="level level-high">HIGH</span></div>
+            <div class="radar-item"><div class="icon">🔗</div><h4>Supply Chain</h4><p>Third-party compromise</p><span class="level level-critical">CRITICAL</span></div>
+            <div class="radar-item"><div class="icon">📡</div><h4>IoT</h4><p>Default creds, weak firmware</p><span class="level level-high">HIGH</span></div>
+        </div>
+    </div>
+
+    <div class="info-grid" style="margin-top:2rem;">
+        <div class="info-box">
+            <h3>📈 Rising Threats</h3>
+            <ul>
+                <li>Ransomware-as-a-Service (RaaS)</li>
+                <li>AI-generated phishing & deepfakes</li>
+                <li>Cloud-native attacks (K8s, containers)</li>
+                <li>Zero-day exploit market growth</li>
+                <li>Cryptomining resurgence</li>
+            </ul>
+        </div>
+        <div class="info-box">
+            <h3>🎯 Targeted Industries</h3>
+            <ul>
+                <li>Healthcare — patient data & ransomware</li>
+                <li>Finance — fraud & data theft</li>
+                <li>Education — weak security budgets</li>
+                <li>Manufacturing — IP theft & disruption</li>
+                <li>Energy — critical infrastructure attacks</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== SESSION 04: KILL CHAIN ==================== -->
+<section class="section" id="killchain">
+    <div class="section-header">
+        <div class="section-tag tag-green">Session 04</div>
+        <h2>Cyber Kill Chain & Attack Lifecycle</h2>
+        <p>Lockheed Martin's Cyber Kill Chain defines the 7 stages of a targeted cyber attack. Breaking any stage can prevent the attack.</p>
+    </div>
+
+    <div class="diagram-container">
+        <div class="diagram-title dt-green">▸ Lockheed Martin Cyber Kill Chain®</div>
+        <div class="kill-chain">
+            <div class="kill-step"><div class="kill-box"><div class="step-num">STAGE 1</div><div class="step-name">🔍 Recon</div></div><div class="kill-arrow">→</div></div>
+            <div class="kill-step"><div class="kill-box"><div class="step-num">STAGE 2</div><div class="step-name">⚔️ Weaponize</div></div><div class="kill-arrow">→</div></div>
+            <div class="kill-step"><div class="kill-box"><div class="step-num">STAGE 3</div><div class="step-name">🚀 Delivery</div></div><div class="kill-arrow">→</div></div>
+            <div class="kill-step"><div class="kill-box"><div class="step-num">STAGE 4</div><div class="step-name">💥 Exploit</div></div><div class="kill-arrow">→</div></div>
+            <div class="kill-step"><div class="kill-box"><div class="step-num">STAGE 5</div><div class="step-name">🦠 Install</div></div><div class="kill-arrow">→</div></div>
+            <div class="kill-step"><div class="kill-box"><div class="step-num">STAGE 6</div><div class="step-name">📡 C&C</div></div><div class="kill-arrow">→</div></div>
+            <div class="kill-step"><div class="kill-box" style="border-color:var(--accent-red);box-shadow:var(--glow-red);"><div class="step-num" style="color:var(--accent-red);">STAGE 7</div><div class="step-name">🎯 Actions</div></div></div>
+        </div>
+    </div>
+
+    <div class="lifecycle" style="margin-top:2rem;">
+        <div class="lifecycle-step"><div class="lifecycle-num">1</div><h4>Reconnaissance</h4><p>Identifying targets, gathering OSINT, scanning for vulnerabilities</p></div>
+        <div class="lifecycle-step"><div class="lifecycle-num">2</div><h4>Weaponization</h4><p>Coupling exploit with payload, creating malware artifacts</p></div>
+        <div class="lifecycle-step"><div class="lifecycle-num">3</div><h4>Delivery</h4><p>Phishing emails, waterhole attacks, USB drops</p></div>
+        <div class="lifecycle-step"><div class="lifecycle-num">4</div><h4>Exploitation</h4><p>Triggering vulnerability to execute code on target</p></div>
+        <div class="lifecycle-step"><div class="lifecycle-num">5</div><h4>Installation</h4><p>Backdoor, trojan, or persistent implant deployed</p></div>
+        <div class="lifecycle-step"><div class="lifecycle-num">6</div><h4>C&C</h4><p>Establishing command channel with attacker infrastructure</p></div>
+        <div class="lifecycle-step"><div class="lifecycle-num">7</div><h4>Objectives</h4><p>Data theft, destruction, or lateral movement</p></div>
+    </div>
+
+    <div class="diagram-container" style="margin-top:2rem;">
+        <div class="diagram-title dt-green">▸ Break the Kill Chain — Defense at Each Stage</div>
+        <div class="defense-flow">
+            <div class="defense-item"><div class="stage">STAGE 1</div><h4>Recon</h4><p>Reduce attack surface, limit public info</p></div>
+            <div class="defense-item"><div class="stage">STAGE 2</div><h4>Weaponize</h4><p>Email attachment scanning, sandboxing</p></div>
+            <div class="defense-item"><div class="stage">STAGE 3</div><h4>Delivery</h4><p>Anti-phishing training, email filtering</p></div>
+            <div class="defense-item"><div class="stage">STAGE 4</div><h4>Exploit</h4><p>Patch management, IPS</p></div>
+            <div class="defense-item"><div class="stage">STAGE 5</div><h4>Install</h4><p>Endpoint detection (EDR)</p></div>
+            <div class="defense-item"><div class="stage">STAGE 6</div><h4>C&C</h4><p>Network monitoring, DNS filtering</p></div>
+            <div class="defense-item"><div class="stage">STAGE 7</div><h4>Objectives</h4><p>Data Loss Prevention (DLP)</p></div>
+        </div>
+    </div>
+
+    <div class="info-grid" style="margin-top:2rem;">
+        <div class="info-box">
+            <h3>🗺️ MITRE ATT&CK Tactics</h3>
+            <ul>
+                <li>TA0043 — Reconnaissance</li>
+                <li>TA0042 — Resource Development</li>
+                <li>TA0001 — Initial Access</li>
+                <li>TA0002 — Execution</li>
+                <li>TA0003 — Persistence</li>
+                <li>TA0004 — Privilege Escalation</li>
+                <li>TA0005 — Defense Evasion</li>
+                <li>TA0006 — Credential Access</li>
+                <li>TA0007 — Discovery</li>
+                <li>TA0008 — Lateral Movement</li>
+                <li>TA0009 — Collection</li>
+                <li>TA0011 — Command and Control</li>
+                <li>TA0010 — Exfiltration</li>
+                <li>TA0040 — Impact</li>
+            </ul>
+        </div>
+        <div class="info-box">
+            <h3>🔍 Common MITRE Techniques</h3>
+            <ul>
+                <li>T1566 — Phishing (Initial Access)</li>
+                <li>T1190 — Exploit Public-Facing App</li>
+                <li>T1059 — Command & Scripting Interpreter</li>
+                <li>T1547 — Boot or Logon Autostart</li>
+                <li>T1055 — Process Injection</li>
+                <li>T1078 — Valid Accounts</li>
+                <li>T1021 — Remote Services</li>
+                <li>T1041 — Exfiltration Over C&C</li>
+                <li>T1486 — Data Encrypted for Impact</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== SESSION 05: THREAT ACTORS ==================== -->
+<section class="section" id="actors">
+    <div class="section-header">
+        <div class="section-tag tag-purple">Session 05</div>
+        <h2>Types of Threat Actors</h2>
+        <p>Understanding the motivations, capabilities, and tactics of different threat actor groups is critical for effective defense.</p>
+    </div>
+
+    <div class="actor-grid">
+        <div class="actor-card state">
+            <div class="actor-emoji">🏴</div>
+            <h3>Nation-State Actors</h3>
+            <div class="actor-motive motive-political">Political / Espionage</div>
+            <ul class="actor-details">
+                <li>Well-funded, patient, sophisticated</li>
+                <li>Zero-day exploits, custom malware</li>
+                <li>Targets: government, defense, critical infra</li>
+                <li>Examples: APT28 (Russia), APT41 (China), Lazarus (DPRK)</li>
+                <li>Dwell time: 200+ days average</li>
+            </ul>
+        </div>
+        <div class="actor-card criminal">
+            <div class="actor-emoji">💰</div>
+            <h3>Cybercriminals</h3>
+            <div class="actor-motive motive-financial">Financial Gain</div>
+            <ul class="actor-details">
+                <li>Organized crime groups, RaaS operators</li>
+                <li>Ransomware, banking trojans, fraud</li>
+                <li>Target: any organization with money</li>
+                <li>Examples: REvil, Conti, FIN7, Carbanak</li>
+                <li>Increasingly targeting healthcare & education</li>
+            </ul>
+        </div>
+        <div class="actor-card hacktivist">
+            <div class="actor-emoji">✊</div>
+            <h3>Hacktivists</h3>
+            <div class="actor-motive motive-ideology">Ideology / Political</div>
+            <ul class="actor-details">
+                <li>Motivated by social/political causes</li>
+                <li>Defacement, DDoS, data leaks</li>
+                <li>Target: governments, corporations</li>
+                <li>Examples: Anonymous, LulzSec, KillNet</li>
+                <li>Often use social media for coordination</li>
+            </ul>
+        </div>
+        <div class="actor-card insider">
+            <div class="actor-emoji">🕵️</div>
+            <h3>Insider Threats</h3>
+            <div class="actor-motive motive-revenge">Revenge / Financial</div>
+            <ul class="actor-details">
+                <li>Current/former employees with access</li>
+                <li>Malicious or negligent insiders</li>
+                <li>Target: their own organization</li>
+                <li>Difficult to detect, bypass perimeter security</li>
+                <li>40% of breaches involve insiders</li>
+            </ul>
+        </div>
+        <div class="actor-card script">
+            <div class="actor-emoji">🧒</div>
+            <h3>Script Kiddies</h3>
+            <div class="actor-motive motive-thrill">Thrill / Notoriety</div>
+            <ul class="actor-details">
+                <li>Low technical skill, use pre-made tools</li>
+                <li>Download exploit kits, follow tutorials</li>
+                <li>Target: easy, vulnerable systems</li>
+                <li>Impact: usually low but annoying</li>
+                <li>May escalate skill over time</li>
+            </ul>
+        </div>
+        <div class="actor-card apt">
+            <div class="actor-emoji">🎯</div>
+            <h3>Advanced Persistent Threats</h3>
+            <div class="actor-motive motive-spy">Long-term Espionage</div>
+            <ul class="actor-details">
+                <li>Prolonged, targeted campaigns</li>
+                <li>Multi-stage attacks, custom tooling</li>
+                <li>Target: high-value intellectual property</li>
+                <li>Examples: APT29 (Cozy Bear), Equation Group</li>
+                <li>Months to years of persistent access</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="diagram-container" style="margin-top:2rem;">
+        <div class="diagram-title dt-purple">▸ Threat Actor Capability Matrix</div>
+        <div style="overflow-x:auto;">
+            <table class="matrix-table">
+                <thead>
+                    <tr>
+                        <th>Actor Type</th>
+                        <th>Resources</th>
+                        <th>Sophistication</th>
+                        <th>Persistence</th>
+                        <th>Impact</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>🏴 Nation-State</strong></td><td><span class="bar" style="width:90%;background:var(--accent-red);"></span></td><td><span class="bar" style="width:95%;background:var(--accent-purple);"></span></td><td><span class="bar" style="width:100%;background:var(--accent-cyan);"></span></td><td><span class="bar" style="width:100%;background:var(--accent-orange);"></span></td></tr>
+                    <tr><td><strong>🎯 APT Groups</strong></td><td><span class="bar" style="width:80%;background:var(--accent-red);"></span></td><td><span class="bar" style="width:90%;background:var(--accent-purple);"></span></td><td><span class="bar" style="width:95%;background:var(--accent-cyan);"></span></td><td><span class="bar" style="width:85%;background:var(--accent-orange);"></span></td></tr>
+                    <tr><td><strong>💰 Cybercriminals</strong></td><td><span class="bar" style="width:70%;background:var(--accent-red);"></span></td><td><span class="bar" style="width:65%;background:var(--accent-purple);"></span></td><td><span class="bar" style="width:55%;background:var(--accent-cyan);"></span></td><td><span class="bar" style="width:80%;background:var(--accent-orange);"></span></td></tr>
+                    <tr><td><strong>🕵️ Insiders</strong></td><td><span class="bar" style="width:40%;background:var(--accent-red);"></span></td><td><span class="bar" style="width:35%;background:var(--accent-purple);"></span></td><td><span class="bar" style="width:50%;background:var(--accent-cyan);"></span></td><td><span class="bar" style="width:75%;background:var(--accent-orange);"></span></td></tr>
+                    <tr><td><strong>✊ Hacktivists</strong></td><td><span class="bar" style="width:35%;background:var(--accent-red);"></span></td><td><span class="bar" style="width:50%;background:var(--accent-purple);"></span></td><td><span class="bar" style="width:30%;background:var(--accent-cyan);"></span></td><td><span class="bar" style="width:45%;background:var(--accent-orange);"></span></td></tr>
+                    <tr><td><strong>🧒 Script Kiddies</strong></td><td><span class="bar" style="width:20%;background:var(--accent-red);"></span></td><td><span class="bar" style="width:15%;background:var(--accent-purple);"></span></td><td><span class="bar" style="width:15%;background:var(--accent-cyan);"></span></td><td><span class="bar" style="width:20%;background:var(--accent-orange);"></span></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="example-grid" style="margin-top:2rem;">
+        <div class="example-card">
+            <div class="group" style="color:var(--accent-red);">NATION-STATE</div>
+            <h3>SolarWinds Supply Chain</h3>
+            <p>APT29 (Cozy Bear) compromised SolarWinds Orion software update, infiltrating 18,000+ organizations including US Treasury, DOJ, and DHS.</p>
+            <span class="year">2020</span>
+        </div>
+        <div class="example-card">
+            <div class="group" style="color:var(--accent-purple);">CYBERCRIMINAL</div>
+            <h3>Colonial Pipeline Ransomware</h3>
+            <p>DarkSide ransomware shut down largest US fuel pipeline. $4.4M ransom paid. Gas shortages across Southeast US.</p>
+            <span class="year">2021</span>
+        </div>
+        <div class="example-card">
+            <div class="group" style="color:var(--accent-cyan);">HACKTIVIST</div>
+            <h3>Anonymous vs ISIS</h3>
+            <p>Anonymous launched #OpISIS, taking down thousands of ISIS social media accounts and disrupting their recruitment online.</p>
+            <span class="year">2015</span>
+        </div>
+        <div class="example-card">
+            <div class="group" style="color:var(--accent-orange);">INSIDER</div>
+            <h3>Edward Snowden Leaks</h3>
+            <p>NSA contractor leaked classified surveillance programs. Most significant intelligence breach in US history.</p>
+            <span class="year">2013</span>
+        </div>
+        <div class="example-card">
+            <div class="group" style="color:var(--accent-green);">SCRIPT KIDDIE</div>
+            <h3>LulzSec Spree</h3>
+            <p>Group of young hackers breached Sony, PBS, FBI partners using SQL injection and basic exploits for "fun."</p>
+            <span class="year">2011</span>
+        </div>
+        <div class="example-card">
+            <div class="group" style="color:var(--accent-pink);">APT</div>
+            <h3>Stuxnet Nuclear Facility</h3>
+            <p>Most sophisticated malware ever discovered. Destroyed Iranian nuclear centrifuges via air-gapped network infection.</p>
+            <span class="year">2010</span>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== FOOTER ==================== -->
+<footer>
+    <p>Cyber Threat Intelligence Hub — Educational Reference Guide</p>
+    <p style="margin-top:0.5rem;">Built for <span>Security Awareness</span> & Training</p>
+</footer>
+
+<script>
+    document.querySelectorAll('nav a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+    const sections = document.querySelectorAll('.section, .hero');
+    const navLinks = document.querySelectorAll('nav a');
+    window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach(section => {
+            if (pageYOffset >= section.offsetTop - 150) current = section.getAttribute('id');
+        });
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === '#' + current) link.classList.add('active');
+        });
+    });
+</script>
+</body>
+</html>

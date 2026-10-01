@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SOC Structure &amp; Roles and SIEM Architecture — A Simple Guide</title>
+<style>
+  :root{
+    --bg:#0f1720;
+    --panel:#16212c;
+    --panel-2:#1c2a37;
+    --line:#2b3b4b;
+    --txt:#e8eef4;
+    --muted:#a5b6c6;
+    --blue:#4cc3f5;
+    --green:#4ade80;
+    --yellow:#fbbf24;
+    --red:#fb7185;
+    --max:1000px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--bg);color:var(--txt);
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.75;font-size:16.5px;
+  }
+  a{color:var(--blue);text-decoration:none}
+  h2{font-size:1.45rem;margin:0 0 4px;display:flex;align-items:center;gap:10px}
+  h2::before{content:"";width:5px;height:24px;border-radius:3px;background:linear-gradient(var(--blue),var(--green))}
+  h3{font-size:1.05rem;margin:24px 0 6px;color:var(--blue)}
+  h4{margin:0 0 6px;font-size:1rem}
+  p{margin:8px 0}
+  .lead{color:var(--muted);margin:0 0 18px}
+
+  header{
+    background:linear-gradient(135deg,#12212e,#16212c);
+    border-bottom:1px solid var(--line);
+    padding:44px 20px 36px;text-align:center;
+  }
+  header h1{margin:0 0 10px;font-size:2rem;line-height:1.35}
+  header p{margin:0 auto;max-width:700px;color:var(--muted)}
+
+  nav{position:sticky;top:0;z-index:10;background:rgba(15,23,32,.93);
+      backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  nav .inner{max-width:var(--max);margin:0 auto;padding:9px 20px;display:flex;gap:6px;overflow-x:auto}
+  nav a{color:var(--muted);font-size:.9rem;padding:6px 11px;border-radius:8px;white-space:nowrap}
+  nav a:hover{background:var(--panel-2);color:var(--txt);text-decoration:none}
+
+  main{max-width:var(--max);margin:0 auto;padding:0 20px 70px}
+  section{padding-top:48px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+  .grid{display:grid;gap:14px}
+  .g2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+  .g3{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+  .tier{border-left:4px solid var(--blue);padding-left:14px}
+  .tier.t2{border-color:var(--green)}
+  .tier.t3{border-color:var(--yellow)}
+  .who{font-size:.72rem;letter-spacing:1px;text-transform:uppercase;color:var(--blue);font-weight:700}
+  .tier.t2 .who{color:var(--green)}
+  .tier.t3 .who{color:var(--yellow)}
+
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:.92rem}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+  th{background:var(--panel-2);color:var(--blue)}
+  td{background:var(--panel)}
+  tbody tr:nth-child(even) td{background:#141e28}
+
+  ul.clean{padding-left:22px;margin:8px 0}
+  ul.clean li{margin:6px 0}
+  code{background:#0b1219;border:1px solid var(--line);border-radius:5px;padding:1px 6px;
+       font-family:Consolas,monospace;font-size:.85em;color:var(--green)}
+  pre{background:#0b1219;border:1px solid var(--line);border-radius:10px;padding:15px;
+      overflow-x:auto;font-family:Consolas,monospace;font-size:.82rem;line-height:1.7;color:#cbd5e1}
+
+  .say{background:rgba(76,195,245,.08);border:1px solid rgba(76,195,245,.3);
+       border-radius:12px;padding:16px 20px;margin:16px 0}
+  .say b.lab{color:var(--blue);font-size:.78rem;letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:4px}
+  .warn{background:rgba(251,191,36,.08);border-color:rgba(251,191,36,.32)}
+  .warn b.lab{color:var(--yellow)}
+  .try{background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.3)}
+  .try b.lab{color:var(--green)}
+
+  .fig{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin:18px 0}
+  .fig svg{display:block;width:100%;height:auto}
+  .fig figcaption{color:var(--muted);font-size:.85rem;margin-top:10px;text-align:center}
+  .b1{fill:#16374a;stroke:#4cc3f5}
+  .b2{fill:#143a2a;stroke:#4ade80}
+  .b3{fill:#3c3110;stroke:#fbbf24}
+  .b4{fill:#3d1a22;stroke:#fb7185}
+  .bn{fill:#1c2a37;stroke:#2b3b4b}
+  .tt{fill:#e8eef4;font-size:14px;text-anchor:middle;font-family:"Segoe UI",sans-serif;font-weight:600}
+  .ts{fill:#a5b6c6;font-size:12px;text-anchor:middle;font-family:"Segoe UI",sans-serif}
+  .hd{fill:#4cc3f5;font-size:12px;text-anchor:middle;font-weight:700;letter-spacing:1px;font-family:"Segoe UI",sans-serif}
+  .ar{stroke:#5a7286;stroke-width:2;fill:none;marker-end:url(#ah)}
+
+  details.qa{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin-bottom:9px;overflow:hidden}
+  details.qa[open]{border-color:rgba(76,195,245,.45)}
+  details.qa summary{cursor:pointer;padding:13px 16px;font-weight:600;list-style:none;display:flex;gap:10px}
+  details.qa summary::-webkit-details-marker{display:none}
+  details.qa summary::before{content:"+";color:var(--blue);font-weight:700;line-height:1.5}
+  details.qa[open] summary::before{content:"\2212"}
+  details.qa .body{padding:0 16px 14px 38px;color:#cfdae6;font-size:.95rem}
+  .hide{display:none !important}
+  .tools{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px}
+  input[type=search]{flex:1;min-width:210px;background:#0b1219;color:var(--txt);border:1px solid var(--line);
+    border-radius:10px;padding:10px 14px;font-size:.95rem}
+  input[type=search]:focus{outline:none;border-color:var(--blue)}
+
+  footer{border-top:1px solid var(--line);padding:22px;text-align:center;color:var(--muted);font-size:.85rem}
+  @media(max-width:640px){header h1{font-size:1.5rem}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🛡️ Security Operations Center (SOC)<br><span style="font-size:1.15rem;color:var(--green)">Structure, Roles &amp; the SIEM</span></h1>
+  <p>A very simple guide, written for students. Big words are explained in normal language,
+     and every topic has a picture.</p>
+</header>
+
+<nav><div class="inner">
+  <a href="#start">0. Before we start</a>
+  <a href="#roles">1. SOC Structure &amp; Roles</a>
+  <a href="#siem">2. SIEM Architecture</a>
+  <a href="#example">3. Simple Example</a>
+  <a href="#glossary">4. Words to Know</a>
+  <a href="#qa">5. Q&amp;A</a>
+  <a href="#quiz">6. Quick Quiz</a>
+</div></nav>
+
+<main>
+
+<!-- 0 -->
+<section id="start">
+  <h2>0. Before we start — what is a SOC?</h2>
+  <p class="lead">Just two sentences first. The rest of the page builds on this.</p>
+
+  <div class="say">
+    <b class="lab">In one line</b>
+    A <b>Security Operations Center (SOC)</b> is a <b>team of people who sit in a room (or work remotely)
+    and watch over a computer system all day and night</b>, to spot anybody trying to break in or damage it,
+    and to stop them.
+  </div>
+
+  <div class="card">
+    <h4>Think of a school</h4>
+    <p>Imagine your school has a <b>watchman at the gate</b>. He stands there all day, watching who comes in.
+    If a stranger tries to force the gate open, the watchman stops him and calls the head teacher.</p>
+    <p>Now imagine the watchman also watched the <b>library, the computer lab and the office</b> at the
+    same time, and had a camera on every room. <b>That is exactly what a SOC does for computers.</b></p>
+    <p>Your school has one watchman and a few rooms. A big company has a SOC that watches
+    <b>hundreds of rooms</b> — hundreds of computers, servers, mobile phones, cloud accounts and websites.</p>
+  </div>
+
+  <h3>Why a SOC is needed at all</h3>
+  <div class="grid g3">
+    <div class="card"><h4>👀 Watch</h4><p style="margin:0;font-size:.93rem">Every computer writes a record
+      of what happened, all by itself. A SOC reads those records looking for something wrong.</p></div>
+    <div class="card"><h4>🔎 Find out</h4><p style="margin:0;font-size:.93rem">If something looks wrong,
+      a person checks it properly and decides: is this a real attack, or a false alarm?</p></div>
+    <div class="card"><h4>🛑 Stop it</h4><p style="margin:0;font-size:.93rem">Turn off the account, block
+      the bad computer, save the files, and fix the hole so it cannot happen again.</p></div>
+  </div>
+</section>
+
+<!-- 1 -->
+<section id="roles">
+  <h2>1. SOC Structure &amp; Roles</h2>
+  <p class="lead">A SOC is not one person at one desk. It is a <b>team arranged in levels</b> —
+     like a school has a principal, teachers and a watchman. Each level has a different job.</p>
+
+  <h3>1.1 The three levels</h3>
+  <p>Here is the easiest way to remember it — compare it to your own school:</p>
+
+  <div class="grid g3">
+    <div class="card tier">
+      <span class="who">Level 1 (L1) — the Watchman</span>
+      <h4>Checks every alarm</h4>
+      <p style="margin:0;font-size:.94rem">Gets <b>all</b> the alarms, one after another.</p>
+      <p style="margin:6px 0 0;font-size:.94rem"><b>Does:</b> reads the message, checks the small easy
+      details, throws away the ones that are harmless, and passes the real problems to Level 2.</p>
+      <p style="margin:6px 0 0;font-size:.94rem"><b>Like:</b> the watchman who checks every visitor's
+      pass and only calls the teacher if something is really off.</p>
+    </div>
+    <div class="card tier t2">
+      <span class="who">Level 2 (L2) — the Teacher</span>
+      <h4>Investigates the real problem</h4>
+      <p style="margin:0;font-size:.94rem">Gets only the serious cases that L1 could not solve.</p>
+      <p style="margin:6px 0 0;font-size:.94rem"><b>Does:</b> digs deep, checks the computer properly,
+      finds out how the attacker got in, and stops the attack.</p>
+      <p style="margin:6px 0 0;font-size:.94rem"><b>Like:</b> the teacher who finds out who broke the
+      window and makes sure it is fixed.</p>
+    </div>
+    <div class="card tier t3">
+      <span class="who">Level 3 (L3) — the Principal</span>
+      <h4>Looks for attacks nobody caught</h4>
+      <p style="margin:0;font-size:.94rem">Goes looking for danger on purpose, instead of waiting for alarms.</p>
+      <p style="margin:6px 0 0;font-size:.94rem"><b>Does:</b> studies the newest kinds of attacks, teaches
+      the team what to look for, and improves the rules so the same attack is caught faster next time.</p>
+      <p style="margin:6px 0 0;font-size:.94rem"><b>Like:</b> the principal who checks why the school
+      keeps having the same problem and fixes the system, not just today's case.</p>
+    </div>
+  </div>
+
+  <figure class="fig">
+    <svg viewBox="0 0 880 400" role="img" aria-label="Diagram of SOC levels from L1 to L3 with escalation upward and manager above">
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="#5a7286"/>
+        </marker>
+      </defs>
+      <text x="440" y="20" class="hd">HOW ALARMS MOVE INSIDE A SOC</text>
+
+      <rect x="330" y="36" width="220" height="46" class="b2"/>
+      <text x="440" y="57" class="tt">SOC Manager</text>
+      <text x="440" y="74" class="ts">in charge of the whole team</text>
+
+      <rect x="255" y="120" width="370" height="52" class="b3"/>
+      <text x="440" y="142" class="tt">Level 3 — Hunt &amp; Improve</text>
+      <text x="440" y="160" class="ts">looks for attacks on purpose</text>
+
+      <rect x="255" y="196" width="370" height="52" class="b2"/>
+      <text x="440" y="218" class="tt">Level 2 — Investigate</text>
+      <text x="440" y="236" class="ts">finds out what really happened</text>
+
+      <rect x="255" y="272" width="370" height="52" class="b1"/>
+      <text x="440" y="294" class="tt">Level 1 — Check every alarm</text>
+      <text x="440" y="312" class="ts">filters out the harmless ones</text>
+
+      <rect x="30" y="272" width="180" height="52" class="bn"/>
+      <text x="120" y="294" class="tt">Alarms arrive</text>
+      <text x="120" y="312" class="ts">from the computers</text>
+
+      <path d="M212 298 L251 298" class="ar"/>
+      <path d="M440 270 L440 252" class="ar"/>
+      <path d="M440 194 L440 176" class="ar"/>
+      <path d="M440 118 L440 86" class="ar"/>
+      <path d="M440 272 L440 86" stroke="#fbbf24" stroke-width="2" fill="none" stroke-dasharray="6 5" marker-end="url(#ah)" opacity=".85"/>
+      <text x="452" y="150" class="ts" fill="#fbbf24">serious case → everyone is told</text>
+
+      <text x="440" y="360" class="ts">Blue = check · Green = investigate · Yellow = hunt &amp; improve</text>
+      <text x="440" y="382" class="ts">The dotted yellow line is a "stop everything" emergency alert.</text>
+    </svg>
+    <figcaption>Picture 1 — Alarms start at the bottom and move up only when they are serious.</figcaption>
+  </figure>
+
+  <h3>1.2 Who works in a SOC?</h3>
+  <p>Not everyone on the team is a "hacker". Here is the full list of jobs, written simply.</p>
+  <table>
+    <thead><tr><th>Job</th><th>What they do, in simple words</th></tr></thead>
+    <tbody>
+      <tr><td><b>SOC Manager</b></td><td>The boss of the SOC. Decides the budget, divides shifts, and makes sure the work is done well.</td></tr>
+      <tr><td><b>Shift Leader</b></td><td>In charge of one shift (one part of the day). Gives work to the team, handles the most serious alarms, and hands over to the next shift.</td></tr>
+      <tr><td><b>Level 1 Analyst</b></td><td>The watchman. Reads every alarm, closes the harmless ones, passes on the real ones.</td></tr>
+      <tr><td><b>Level 2 Analyst / Investigator</b></td><td>The teacher. Solves the hard cases and stops the attack.</td></tr>
+      <tr><td><b>Level 3 Analyst / Threat Hunter</b></td><td>The principal. Searches quietly for attacks that produced no alarm at all.</td></tr>
+      <tr><td><b>Detection Engineer</b></td><td>Writes and improves the rules that raise the alarms, and fixes rules that create too many false alarms.</td></tr>
+      <tr><td><b>Threat Intelligence Analyst</b></td><td>Studies known attacker groups and lists of "bad" websites and addresses, so the team knows what to look for.</td></tr>
+      <tr><td><b>Malware Analyst</b></td><td>Studies the harmful programs attackers send, like a doctor studying a disease, to find a cure or a way to remove it.</td></tr>
+      <tr><td><b>Digital Forensics Expert (DFIR)</b></td><td>After an attack, carefully collects proof from the computer, like a police detective collecting evidence.</td></tr>
+      <tr><td><b>Automation Engineer</b></td><td>Connects the tools together so that the response happens by itself — for example, the account gets turned off the moment an attack is found.</td></tr>
+      <tr><td><b>Compliance Analyst</b></td><td>Makes sure the SOC's work satisfies the rules written in company law and standards (like ISO or PCI-DSS).</td></tr>
+      <tr><td><b>Red Team / Blue Team</b></td><td>Red Team = pretend attackers who attack the company on purpose to test the SOC. Blue Team = the SOC itself. Together this is called a <b>Purple Team</b>.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>1.3 How is the work divided during the day?</h3>
+  <p>Since attacks can come at 3 in the morning, the SOC must be awake <b>all 24 hours</b>.
+     So the day is cut into shifts, like a hospital or a factory.</p>
+
+  <figure class="fig">
+    <svg viewBox="0 0 880 210" role="img" aria-label="Twenty four hour clock divided into four shifts">
+      <text x="440" y="20" class="hd">ONE DAY = FOUR SHIFTS, ALL NIGHT</text>
+
+      <rect x="60" y="60" width="180" height="76" class="b1"/>
+      <text x="150" y="88" class="tt">Shift A</text><text x="150" y="107" class="ts">Morning</text><text x="150" y="124" class="ts">6 am – 2 pm</text>
+
+      <rect x="252" y="60" width="180" height="76" class="b2"/>
+      <text x="342" y="88" class="tt">Shift B</text><text x="342" y="107" class="ts">Afternoon</text><text x="342" y="124" class="ts">2 pm – 10 pm</text>
+
+      <rect x="444" y="60" width="180" height="76" class="b3"/>
+      <text x="534" y="88" class="tt">Shift C</text><text x="534" y="107" class="ts">Night</text><text x="534" y="124" class="ts">10 pm – 6 am</text>
+
+      <rect x="636" y="60" width="180" height="76" class="b4"/>
+      <text x="726" y="88" class="tt">On-call</text><text x="726" y="107" class="ts">Emergency</text><text x="726" y="124" class="ts">called for big cases</text>
+
+      <path d="M242 98 L248 98" class="ar"/>
+      <path d="M434 98 L440 98" class="ar"/>
+      <path d="M626 98 L632 98" class="ar"/>
+      <text x="440" y="165" class="ts">At the end of every shift the team writes a handover note for the next team.</text>
+      <text x="440" y="188" class="ts">The handover note says: which problems are still open, and what was already done.</text>
+    </svg>
+    <figcaption>Picture 2 — A 24-hour SOC is split into shifts so that somebody is always awake.</figcaption>
+  </figure>
+
+  <div class="say">
+    <b class="lab">Remember this</b>
+    A <b>L1</b> checks the alarms. A <b>L2</b> solves the problem. A <b>L3</b> hunts for the problem
+    that nobody noticed. Above them sits the <b>Manager</b>, and beside them work the people who build
+    the rules, study the attackers, and improve the tools.
+  </div>
+
+  <h3>1.4 Who runs the SOC — three ways</h3>
+  <table>
+    <thead><tr><th>Way</th><th>Who does the work</th><th>Good thing</th><th>Hard thing</th></tr></thead>
+    <tbody>
+      <tr><td><b>In-house SOC</b></td><td>The company's own employees</td><td>They know the company and the data never leaves the building.</td><td>Very costly. One person cannot cover 24 hours — you need about 5 people for one round-the-clock seat.</td></tr>
+      <tr><td><b>Outsourced (MSSP)</b></tdtd><td>Another company that does it for you</td><td>Cheaper. You get a full 24-hour team immediately, with good tools already set up.</td><td>They do not know your business as well. Your data stays with somebody else. You must write the contract carefully.</td></tr>
+      <tr><td><b>Hybrid</b></td><td>Outside company handles Level 1, your own team handles Level 2 and 3</td><td>Best balance of price and control. This is what most companies choose.</td><td>You must clearly write down who is responsible for what.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 2 -->
+<section id="siem">
+  <h2>2. SIEM Architecture</h2>
+  <p class="lead">A SOC has people. But people cannot read the millions of records computers write.
+     So the SOC also needs a <b>tool</b>. The most important tool is the <b>SIEM</b>.</p>
+
+  <div class="say">
+    <b class="lab">SIEM in one line</b>
+    <b>SIEM</b> = <b>Security Information and Event Management</b>. It is a program that
+    <b>collects the records from every computer in one place, makes them all look the same,
+    looks for patterns, and tells the SOC when it finds something suspicious.</b>
+  </div>
+
+  <h3>2.1 The school-diary idea</h3>
+  <div class="card">
+    <p>Every computer in a school keeps a small diary called a <b>log</b>. It writes down everything:</p>
+    <p><code>09:12 - Ravi opened the computer lab</code> &nbsp; <code>09:15 - wrong password, 3 times</code></p>
+    <p>Now imagine there are <b>200 computers</b>, each with its own diary, each written in a slightly
+       different style, kept in a locked drawer in each room.</p>
+    <ul class="clean">
+      <li>If a thief came in, <b>nobody would notice</b> — nobody is reading 200 diaries.</li>
+      <li>Even if somebody did read them, the words are all different in every diary, so you cannot
+          easily look for the <i>same</i> thing in all of them.</li>
+    </ul>
+    <p><b>The SIEM is the school's master diary.</b> It keeps a copy of all 200 diaries together,
+       rewrites them in one common style, and then reads them looking for patterns.</p>
+  </div>
+
+  <h3>2.2 How the SIEM works — five simple steps</h3>
+  <figure class="fig">
+    <svg viewBox="0 0 960 330" role="img" aria-label="Five simple steps of how a SIEM works">
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="#5a7286"/>
+        </marker>
+      </defs>
+      <text x="480" y="22" class="hd">HOW A SIEM WORKS — 5 STEPS</text>
+
+      <rect x="15" y="52" width="150" height="96" class="bn"/>
+      <text x="90" y="76" class="ts" fill="#4cc3f5" font-weight="700">STEP 1</text>
+      <text x="90" y="98" class="tt">Collect</text>
+      <text x="90" y="118" class="ts">copy the records</text>
+      <text x="90" y="136" class="ts">from every computer</text>
+
+      <rect x="196" y="52" width="150" height="96" class="bn"/>
+      <text x="271" y="76" class="ts" fill="#4cc3f5" font-weight="700">STEP 2</text>
+      <text x="271" y="98" class="tt">Make them</text>
+      <text x="271" y="118" class="ts">the same</text>
+      <text x="271" y="136" class="ts">(normalisation)</text>
+
+      <rect x="377" y="52" width="150" height="96" class="bn"/>
+      <text x="452" y="76" class="ts" fill="#4cc3f5" font-weight="700">STEP 3</text>
+      <text x="452" y="98" class="tt">Add extra</text>
+      <text x="452" y="118" class="ts">information</text>
+      <text x="452" y="136" class="ts">(enrichment)</text>
+
+      <rect x="558" y="52" width="150" height="96" class="b2"/>
+      <text x="633" y="76" class="ts" fill="#4ade80" font-weight="700">STEP 4</text>
+      <text x="633" y="98" class="tt">Look for</text>
+      <text x="633" y="118" class="ts">patterns</text>
+      <text x="633" y="136" class="ts">(correlation)</text>
+
+      <rect x="739" y="52" width="200" height="96" class="b3"/>
+      <text x="839" y="76" class="ts" fill="#fbbf24" font-weight="700">STEP 5</text>
+      <text x="839" y="98" class="tt">Tell the SOC</text>
+      <text x="839" y="118" class="ts">one clear alarm</text>
+      <text x="839" y="136" class="ts">with a next step</text>
+
+      <path d="M167 100 L192 100" class="ar"/>
+      <path d="M348 100 L373 100" class="ar"/>
+      <path d="M529 100 L554 100" class="ar"/>
+      <path d="M710 100 L735 100" class="ar"/>
+
+      <rect x="15" y="182" width="924" height="128" class="bn"/>
+      <text x="35" y="208" class="ts" style="text-anchor:start;font-size:13px;color:#a5b6c6">The same thing in one line:</text>
+      <text x="35" y="236" class="tt" style="text-anchor:start;font-size:14px;font-weight:400;color:#e8eef4">Collect every diary → write them all in the same words → add useful facts → find patterns → raise one clear alarm.</text>
+      <text x="35" y="266" class="ts" style="text-anchor:start;font-size:13px">Without the SIEM a thief has to be caught by luck. With the SIEM, the pattern gives them away.</text>
+      <text x="35" y="290" class="ts" style="text-anchor:start;font-size:13px">This is why a SOC without a SIEM is like a school with 200 diaries and nobody reading them.</text>
+    </svg>
+    <figcaption>Picture 3 — The five steps, from raw records to one useful alarm.</figcaption>
+  </figure>
+
+  <h3>2.3 Each step explained slowly</h3>
+  <div class="grid g2">
+    <div class="card">
+      <h4>Step 1 · Collect the records</h4>
+      <p style="margin:0 0 8px;font-size:.94rem">The SIEM collects the diaries (logs) from everything:</p>
+      <ul class="clean" style="font-size:.92rem">
+        <li>Servers and computers (who logged in, which files were opened)</li>
+        <li>Firewalls and internet connections (which website was blocked)</li>
+        <li>Antivirus / EDR programs (what programs ran)</li>
+        <li>Cloud accounts (who created a new key, who logged in)</li>
+        <li>Web servers, email, mobile phones, and the office Wi-Fi</li>
+      </ul>
+      <p style="margin:0;font-size:.9rem;color:var(--muted)">There are two ways to do it:
+      <b>(a)</b> install a small program on each computer that pushes the records out, or
+      <b>(b)</b> pull them from the internet without installing anything. Big companies use both.</p>
+    </div>
+
+    <div class="card">
+      <h4>Step 2 · Make them all look the same</h4>
+      <p style="margin:0 0 8px;font-size:.94rem">This is called <b>normalisation</b>. It is the most
+      important step and the hardest to understand, so here it is slowly.</p>
+      <p style="margin:0 0 8px;font-size:.9rem;font-family:Consolas,monospace;color:#a5b6c6">Computer A says:<br>"Aug 12 11:03 admin FAILED from 10.2.3.4"</p>
+      <p style="margin:0 0 8px;font-size:.9rem;font-family:Consolas,monospace;color:#a5b6c6">Computer B says:<br>"FAIL_LOGIN u=admin src=10.2.3.4 t=Aug12 11:03"</p>
+      <p style="margin:0;font-size:.94rem">Different words, same <b>meaning</b>. The SIEM rewrites both
+      into one standard form with the same labels, so that <b>one search can find both</b>.
+      Without this step, you would need a different search for every single computer.</p>
+    </div>
+
+    <div class="card">
+      <h4>Step 3 · Add extra information</h4>
+      <p style="margin:0;font-size:.94rem">This is called <b>enrichment</b>. The SIEM adds facts it
+      already knows, so the alarm becomes useful:</p>
+      <ul class="clean" style="font-size:.92rem">
+        <li><code>10.2.3.4</code> is the address of a computer in a different city</li>
+        <li>That address is on the "known bad list" of attackers</li>
+        <li>The user <code>admin</code> is the most powerful account in the company</li>
+        <li>That computer is <b>supposed</b> to be in the office, not on the internet</li>
+      </ul>
+      <p style="margin:6px 0 0;font-size:.94rem">Now the alarm says much more than before: not just
+      "something happened", but <b>"a powerful account is being used by a known attacker from
+      outside, right now."</b></p>
+    </div>
+
+    <div class="card">
+      <h4>Step 4 · Look for patterns</h4>
+      <p style="margin:0 0 8px;font-size:.94rem">This is called <b>correlation</b> — and it is
+      the <b>heart of the whole SOC</b>.</p>
+      <p style="margin:0 0 8px;font-size:.94rem">One wrong password is <b>not</b> an attack —
+      people forget passwords. But <b>twenty wrong passwords in one minute</b> is an attack.
+      A computer cannot feel that difference on its own. The SIEM is told the rule:</p>
+      <p style="margin:0;font-size:.88rem;font-family:Consolas,monospace;color:var(--yellow)">if the same user fails 10 times in 5 minutes<br>&nbsp;&nbsp;→ raise one HIGH alarm</p>
+      <p style="margin:8px 0 0;font-size:.94rem">That is correlation: <b>many small, ordinary events
+      joining together into one big, meaningful one.</b></p>
+    </div>
+
+    <div class="card">
+      <h4>Step 5 · Tell the SOC clearly</h4>
+      <p style="margin:0;font-size:.94rem">Instead of throwing 4,000 raw lines at the analyst, the SIEM
+      sends <b>one tidy message</b>:</p>
+      <p style="margin:8px 0;font-size:.88rem;font-family:Consolas,monospace;color:#a5b6c6">🚨 HIGH — Someone is guessing the admin password<br>
+      &nbsp;&nbsp;User: admin (most powerful account)<br>
+      &nbsp;&nbsp;From: 10.2.3.4 (known attacker, outside office)<br>
+      &nbsp;&nbsp;How many: 22 wrong tries in 4 minutes<br>
+      &nbsp;&nbsp;What to do: block this address now</p>
+      <p style="margin:0;font-size:.94rem">That message is called an <b>alarm (alert)</b>. The analyst
+      can understand it in ten seconds and act on it.</p>
+    </div>
+
+    <div class="card">
+      <h4>Where the alarm goes</h4>
+      <p style="margin:0 0 8px;font-size:.94rem">Once the alarm is raised, this is the chain of events:</p>
+      <ul class="clean" style="font-size:.92rem">
+        <li><b>On a computer screen</b> inside the SOC, in the Level 1 queue</li>
+        <li><b>A phone call</b> (a "page") for the most serious alarms only</li>
+        <li><b>An automatic action</b> — the bad address is blocked, the account is locked, a
+            ticket is created (this is done by a partner tool called <b>SOAR</b>)</li>
+        <li><b>A dashboard</b> so the manager can see how many alarms came today</li>
+      </ul>
+      <p style="margin:6px 0 0;font-size:.9rem;color:var(--muted)"><b>SIEM vs SOAR:</b> the SIEM is the
+      <i>eye</i> that spots the problem. SOAR is the <i>hand</i> that acts on it.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 3 EXAMPLE -->
+<section id="example">
+  <h2>3. One Simple Example</h2>
+  <p class="lead">A short story showing all five steps working together. Read the raw records first,
+     then see how the SIEM turns them into one useful alarm.</p>
+
+  <h3>Step A — The records as they arrive</h3>
+  <p>These are the raw lines from three different computers. On their own, <b>none of them
+     looks dangerous</b>. That is the whole problem.</p>
+<pre>🖥️  Computer 1 (the laptop)      02:10  someone emailed Ravi a fake login page
+🖥️  Computer 1 (the laptop)      02:14  Ravi's password was used from India
+🖥️  Computer 1 (the laptop)      02:15  Ravi's password was used from Germany
+
+🖥️  Computer 2 (the office Wi-Fi) 02:16  password wrong  (1st time)
+🖥️  Computer 2 (the office Wi-Fi) 02:16  password wrong  (2nd time)
+🖥️  Computer 2 (the office Wi-Fi) 02:16  password wrong  (3rd time)
+🖥️  Computer 2 (the office Wi-Fi) 02:17  password wrong  (4th time)
+                                ... and 18 more of these ...
+
+🖥️  Computer 3 (the file server)  02:18  file named "Salary2026.xlsx" was opened</pre>
+
+  <div class="say warn">
+    <b class="lab">The problem</b>
+    A person reading these would think: <i>"Ravi forgot his password."</i> Maybe. Or maybe it
+    does not. <b>Nobody can tell from one line at a time.</b> A diary of single lines is a lie —
+    it hides the story.
+  </div>
+
+  <h3>Step B — What the SIEM figured out</h3>
+  <div class="card">
+    <ol style="margin:0;padding-left:22px">
+      <li style="margin-bottom:8px"><b>Step 1 – Collect:</b> all 22 lines came in, from 3 different computers.</li>
+      <li style="margin-bottom:8px"><b>Step 2 – Same words:</b> the SIEM rewrote them all as
+        <code>action = "password-failed"</code>, <code>user = "rvimala"</code>,
+        <code>time</code>, <code>computer</code> — the same labels for every computer.</li>
+      <li style="margin-bottom:8px"><b>Step 3 – Add facts:</b> Ravi is in Chennai and always logs in
+        from Chennai. The address used is on the "known attacker" list. The attacker's
+        address is <b>not</b> an office address. Ravi's salary file lives only on Computer 3.</li>
+      <li style="margin-bottom:8px"><b>Step 4 – Pattern:</b> the rule was —
+        <i>"20+ wrong passwords for one user in 5 minutes, followed by an important file being
+        opened" → raise a HIGH alarm.</i></li>
+      <li><b>Step 5 – Alarm:</b> one clear message, with the next step already decided.</li>
+    </ol>
+  </div>
+
+  <figure class="fig">
+    <svg viewBox="0 0 900 340" role="img" aria-label="Twenty two small log lines becoming one big alert">
+      <text x="450" y="20" class="hd">22 SMALL LINES  →  1 CLEAR ALARM</text>
+
+      <text x="215" y="48" class="hd">WHAT THE COMPUTERS SAY</text>
+      <rect x="30" y="60" width="370" height="34" class="bn"/><text x="215" y="82" class="ts">02:16 password wrong (1)</text>
+      <rect x="30" y="100" width="370" height="34" class="bn"/><text x="215" y="122" class="ts">02:16 password wrong (2)</text>
+      <rect x="30" y="140" width="370" height="34" class="bn"/><text x="215" y="162" class="ts">02:16 password wrong (3)</text>
+      <rect x="30" y="180" width="370" height="34" class="bn"/><text x="215" y="202" class="ts">02:17 password wrong (4)</text>
+      <rect x="30" y="220" width="370" height="34" class="bn"/><text x="215" y="242" class="ts">... 18 more like these ...</text>
+      <text x="215" y="282" class="ts" fill="#fb7185">Happens 25,000 times a week. Nobody reads them.</text>
+      <text x="215" y="306" class="ts" fill="#fb7185">One line alone tells you nothing.</text>
+
+      <path d="M410 160 L488 160" stroke="#4cc3f5" stroke-width="3" fill="none" marker-end="url(#ah)"/>
+      <text x="449" y="146" class="hd" font-size="11">SIEM</text>
+
+      <text x="700" y="48" class="hd">WHAT THE SOC SEES</text>
+      <rect x="500" y="60" width="380" height="230" class="b3"/>
+      <text x="690" y="90" class="tt" fill="#fbbf24" font-size="15">🚨 HIGH ALARM</text>
+      <text x="690" y="120" class="ts">Someone is guessing a password</text>
+      <text x="690" y="146" class="ts">User: rvimala (Finance dept)</text>
+      <text x="690" y="168" class="ts">Tries: 22 wrong in 4 minutes</text>
+      <text x="690" y="190" class="ts">From: 203.0.113.77 (known attacker)</text>
+      <text x="690" y="212" class="ts">Ravi is in Chennai, not abroad</text>
+      <text x="690" y="234" class="ts">A salary file was just opened</text>
+      <text x="690" y="266" class="ts" fill="#4ade80" font-weight="700">✔ Bad address blocked</text>
+      <text x="690" y="284" class="ts" fill="#4ade80" font-weight="700">✔ Ravi's account locked</text>
+    </svg>
+    <figcaption>Picture 4 — Correlation turns 22 forgettable lines into one story worth acting on.</figcaption>
+  </figure>
+
+  <div class="say try">
+    <b class="lab">The one thing to remember</b>
+    Not one of the 22 lines said "attack". They were all ordinary lines.
+    <b>The pattern is the attack.</b> That is exactly what a SOC and its SIEM exist to find.
+  </div>
+</section>
+
+<!-- 4 GLOSSARY -->
+<section id="glossary">
+  <h2>4. Words to Know</h2>
+  <p class="lead">Use these in your answers. Each one is written in the simplest possible way.</p>
+  <table>
+    <thead><tr><th>Word</th><th>Simple meaning</th></tr></thead>
+    <tbody>
+      <tr><td><b>Log</b></td><td>The small record a computer writes by itself, like a diary entry. "09:12 Ravi opened the lab."</td></tr>
+      <tr><td><b>SOC</b></td><td>Security Operations Center — the team that watches the computers and stops attacks.</td></tr>
+      <tr><td><b>SIEM</b></td><td>Security Information and Event Management — the tool that collects all logs and finds patterns in them.</td></tr>
+      <tr><td><b>Normalisation</b></td><td>Making all logs look the same, so one search works everywhere.</td></tr>
+      <tr><td><b>Enrichment</b></td><td>Adding extra facts (location, bad-address lists, who owns the computer) to a log so the alarm makes sense.</td></tr>
+      <tr><td><b>Correlation</b></td><td>Joining many ordinary events into one big meaningful one. <b>The most important word on this page.</b></td></tr>
+      <tr><td><b>Alert / Alarm</b></td><td>The one clear message the SIEM sends when it finds a pattern worth worrying about.</td></tr>
+      <tr><td><b>False alarm (false positive)</b></td><td>An alarm that looks dangerous but is actually harmless. Too many of these and the team starts ignoring everything.</td></tr>
+      <tr><td><b>True positive</b></td><td>An alarm that really is an attack.</td></tr>
+      <tr><td><b>Escalation</b></td><td>Passing a problem to a higher level because you cannot solve it yourself.</td></tr>
+      <tr><td><b>Containment</b></td><td>Stopping the attack from spreading any further — blocking, disconnecting, turning off an account.</td></tr>
+      <tr><td><b>24×7</b></td><td>Every hour of every day, all year, including nights and holidays.</td></tr>
+      <tr><td><b>SOAR</b></td><td>The helper tool that automatically performs the fix — the SIEM spots it, SOAR acts on it.</td></tr>
+      <tr><td><b>EDR</b></td><td>A program on a computer that watches for danger and can lock the computer down.</td></tr>
+      <tr><td><b>MSSP</b></td><td>A company that runs a SOC for other companies, for a fee.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 5 QA -->
+<section id="qa">
+  <h2>5. Questions &amp; Answers</h2>
+  <p class="lead">Twenty short questions with simple answers. Use the search box to find one.</p>
+
+  <div class="tools">
+    <input type="search" id="q" placeholder="Search a question… e.g. SIEM, L1, log, shift…" />
+  </div>
+
+  <details class="qa" open><summary>What is a SOC?</summary><div class="body">
+    <p>A <b>Security Operations Center</b> is a team of people who watch over a computer system
+    all day and night. They read the records the computers write, look for signs of an attack,
+    and stop it. It is the security control room for computers.</p></div></details>
+
+  <details class="qa"><summary>Is a SOC the same thing as an antivirus?</summary><div class="body">
+    <p><b>No.</b> An antivirus (or EDR) is a program on <i>one</i> computer that looks for known bad
+    programs. A SOC is a <i>team of people</i> that watches the <b>whole</b> company, and can also
+    catch attacks that no antivirus will ever know about, such as somebody using a stolen password.</p></div></details>
+
+  <details class="qa"><summary>Is a SOC different from a NOC?</summary><div class="body">
+    <p>Yes. A <b>NOC</b> (Network Operations Center) watches whether things are <i>working</i> —
+    "the internet is down", "the printer is slow". A <b>SOC</b> watches whether things are
+    <i>safe</i> — "somebody is breaking in". Many companies run both in the same room.</p></div></details>
+
+  <details class="qa"><summary>Why does the SOC work 24×7?</summary><div class="body">
+    <p>Because attacks do not wait for office hours. Somebody can break in at 3 a.m. and finish
+    their work before anybody arrives at 9 a.m. Attackers even <b>choose</b> nights and weekends,
+    because nobody is watching. That is why the work is split into four shifts.</p></div></details>
+
+  <details class="qa"><summary>What is the difference between L1, L2 and L3?</summary><div class="body">
+    <ul class="clean">
+      <li><b>L1 — the watchman.</b> Checks every alarm, throws out the harmless ones, passes on the real ones.</li>
+      <li><b>L2 — the teacher.</b> Solves the hard cases and stops the attack.</li>
+      <li><b>L3 — the principal.</b> Searches for attacks that gave no alarm, and teaches the team what to look for next time.</li>
+    </ul></div></details>
+
+  <details class="qa"><summary>Does a SOC manager do the technical work too?</summary><div class="body">
+    <p>Usually not much. The manager mostly manages — budget, shifts, training, and making sure
+    the serious alarms were handled properly. When a really big attack happens, the manager
+    decides what the company tells the public, the customers and the police.</p></div></details>
+
+  <details class="qa"><summary>Does every company need a full SOC?</summary><div class="body">
+    <p>No — but everyone needs the <b>work</b> to be done. A small company can use a cloud SIEM,
+    switch on about ten ready-made rules, and pay an outside company to watch it 24 hours
+    instead of hiring a full team. Big companies build their own.</p></div></details>
+
+  <details class="qa"><summary>What is a SIEM?</summary><div class="body">
+    <p><b>Security Information and Event Management.</b> It is the tool that collects the log
+    records from every computer in one place, makes them all the same, looks for patterns,
+    and sends one clear alarm to the SOC when it finds something wrong.</p></div></details>
+
+  <details class="qa"><summary>Computers already save logs. Why do we need a SIEM?</summary><div class="body">
+    <p>Because of three reasons:<br>
+    <b>(1) Volume</b> — a company makes far more records than any person can read.<br>
+    <b>(2) Location</b> — each computer keeps its own diary, so you must open 200 computers to
+    see one story.<br>
+    <b>(3) Different languages</b> — every computer writes in its own style, so you cannot search
+    them all at once.</p>
+    <p>The SIEM fixes all three: one place, one style, and a machine that reads everything for you.</p></div></details>
+
+  <details class="qa"><summary>Is a SIEM a virus scanner?</summary><div class="body">
+    <p><b>No.</b> A virus scanner compares files against a list of known bad ones. A SIEM compares
+    <i>behaviour</i> against patterns. It can catch an attack that uses <b>no virus at all</b> —
+    for example, somebody using a stolen password to log in. That kind of attack is actually
+    the most common kind there is.</p></div></details>
+
+  <details class="qa"><summary>What does "normalisation" mean?</summary><div class="body">
+    <p>Making everything look the same. One computer writes "admin FAILED from 10.2.3.4" and
+    another writes "FAIL_LOGIN u=admin src=10.2.3.4". The meaning is identical but the words are
+    not. The SIEM rewrites both into one standard form with the same labels, so a single search
+    finds both. Without this, you would need thousands of different searches.</p></div></details>
+
+  <details class="qa"><summary>What does "enrichment" mean?</summary><div class="body">
+    <p>Adding facts the SIEM already knows onto a record, so the alarm makes sense.
+    Example: a login from another country is just a number on a screen. After enrichment it says
+    — "this user is always in Chennai, this address is a known attacker, and this account can
+    delete every file in the company."</p></div></details>
+
+  <details class="qa"><summary>What is correlation, in the simplest words?</summary><div class="body">
+    <p>Putting many small events side by side and noticing the pattern they form together.
+    <br><b>One wrong password</b> = a forgetful person.
+    <br><b>Twenty wrong passwords in one minute</b> = an attack.
+    <br>The events are identical. Only the <b>pattern</b> is different — and a computer cannot see
+    the pattern by itself, so somebody has to tell it the rule. That telling is correlation.</p></div></details>
+
+  <details class="qa"><summary>What is an alert?</summary><div class="body">
+    <p>The clear message the SIEM sends when it finds a pattern worth worrying about. Instead of
+    sending 4,000 raw lines, it sends one message like
+    <b>"22 wrong passwords for the admin account in 4 minutes, from a known attacker — block it."</b></p></div></details>
+
+  <details class="qa"><summary>What is a false alarm, and why is it a problem?</summary><div class="body">
+    <p>A false alarm (false positive) looks dangerous but is harmless — for example, the nightly
+    backup job looks like "thousands of files changed". The problem is quantity: many companies
+    get 5,000 to 50,000 alarms a day and only 1 to 5 are real. The team starts ignoring alarms,
+    and then they miss the one that really mattered. <b>Too much noise is dangerous in itself.</b></p></div></details>
+
+  <details class="qa"><summary>What is a SOAR, and is it the same as a SIEM?</summary><div class="body">
+    <p>No. <b>SIEM = the eye.</b> It spots the problem and raises the alarm.
+    <b>SOAR = the hand.</b> It carries out the fix — blocks the address, locks the account,
+    creates a ticket — and can even do it by itself, at 3 a.m., within seconds of the alarm.
+    They are two different tools that work together.</p></div></details>
+
+  <details class="qa"><summary>Can a computer be deleted so the attacker cannot see the log?</summary><div class="body">
+    <p>This is one of the most important reasons for a SIEM. If an attacker breaks in, he may try
+    to erase his own trail from the computer. That is why the SIEM keeps its copy <b>somewhere
+    else</b> and receives every record within seconds. Deleting the diary no longer works,
+    because the master diary is safe. The SOC also sets an alarm for exactly this —
+    "event log was cleared" is treated as a very serious attack.</p></div></details>
+
+  <details class="qa"><summary>What is a log source matrix?</summary><div class="body">
+    <p>A simple table that lists every computer and system that should send records to the SIEM,
+    and who is responsible for it. It answers two questions the SOC must never get wrong:
+    <b>"what should be logging?"</b> and <b>"what has stopped logging?"</b> A column for the
+    "last checked date" turns log health into a checklist instead of a guess.</p></div></details>
+
+  <details class="qa"><summary>What is MTTD and MTTR?</summary><div class="body">
+    <p><b>MTTD</b> = Mean Time To Detect — how long from the attack starting until the SOC noticed.
+    <b>MTTR</b> = Mean Time To Respond or Recover — how long until it was sorted out.</p>
+    <p>Both should go <b>down</b>, not up. If MTTD is 3 months, your logs are not working properly.</p></div></details>
+
+  <details class="qa"><summary>Give me three things that make log collection go wrong.</summary><div class="body">
+    <ul class="clean">
+      <li><b>Silent gaps</b> — a computer stops sending and nobody notices for weeks. Fix: send a
+      test ping every hour and alarm if it does not arrive.</li>
+      <li><b>Clocks not matching</b> — if one computer's clock says 2:00 and another's says 1:40,
+      you cannot prove what happened first. Fix: set all clocks automatically (NTP).</li>
+      <li><b>Collecting the wrong things</b> — thousands of unimportant messages while the
+      important ones are missing.</li>
+    </ul></div></details>
+
+  <details class="qa"><summary>In one sentence, what is the job of a SOC?</summary><div class="body">
+    <p>To <b>watch every computer in the company all day and night, notice when somebody is
+    trying to break in, and stop them before any harm is done.</b></p></div></details>
+
+  <details class="qa"><summary>In one sentence, what does the SIEM do?</summary><div class="body">
+    <p>It <b>gathers all the computer records in one place, puts them in one common language,
+    spots the patterns that show an attack, and tells the SOC in one clear message what to do.</b></p></div></details>
+</section>
+
+<!-- 6 QUIZ -->
+<section id="quiz">
+  <h2>6. Quick Quiz</h2>
+  <p class="lead">Check yourself. Click a question to see the answer.</p>
+
+  <details class="qa"><summary>Q1. In one word, what does a SOC's Level 2 person do that Level 1 does not?</summary>
+    <div class="body"><p><b>Investigates.</b> L1 filters alarms; L2 solves the hard real cases.</p></div></details>
+
+  <details class="qa"><summary>Q2. Name the five steps of a SIEM.</summary>
+    <div class="body"><p><b>Collect → Make them the same → Add information → Find patterns → Raise one clear alarm.</b></p></div></details>
+
+  <details class="qa"><summary>Q3. A user fails his password 22 times in 4 minutes. Is that an attack on its own?</summary>
+    <div class="body"><p><b>No, not on its own</b> — but a <b>very strong sign</b> of one. This is
+    exactly what correlation is for: deciding that the pattern is more likely an attack than
+    forgetfulness.</p></div></details>
+
+  <details class="qa"><summary>Q4. Why does the SIEM copy logs to a central place instead of reading them on each computer?</summary>
+    <div class="body"><p>Three reasons: one person cannot read thousands of records; the records are
+    scattered across many computers; and if an attacker breaks in, he can erase his own diary on
+    his own computer. A central copy is safe from all three problems.</p></div></details>
+
+  <details class="qa"><summary>Q5. What is the difference between a SIEM and a SOAR?</summary>
+    <div class="body"><p><b>SIEM is the eye</b> — it spots the problem and raises the alarm.
+    <b>SOAR is the hand</b> — it performs the response automatically (block, lock, ticket).</p></div></details>
+
+  <details class="qa"><summary>Q6. Why are attacks often noticed during night shifts and weekends?</summary>
+    <div class="body"><p>Because attackers know fewer people are watching then, and the company's
+    response is slowest. This is why a SOC must work <b>24×7</b> across four shifts.</p></div></details>
+</section>
+
+</main>
+
+<footer>Single file, no internet needed. Save as <code>index.html</code> and open in any browser.</footer>
+
+<script>
+(function(){
+  const q = document.getElementById('q');
+  const items = Array.from(document.querySelectorAll('details.qa'));
+  q.addEventListener('input', function(){
+    const t = q.value.trim().toLowerCase();
+    items.forEach(function(d){
+      d.classList.toggle('hide', t && d.textContent.toLowerCase().indexOf(t) === -1);
+    });
+  });
+})();
+</script>
+</body>
+</html>

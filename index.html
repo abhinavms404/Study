@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Log Collection &amp; Correlation, Threat Intelligence, Incident Detection &amp; Response — A Simple Guide</title>
+<style>
+  :root{
+    --bg:#0f1720;
+    --panel:#16212c;
+    --panel-2:#1c2a37;
+    --line:#2b3b4b;
+    --txt:#e8eef4;
+    --muted:#a5b6c6;
+    --blue:#4cc3f5;
+    --green:#4ade80;
+    --yellow:#fbbf24;
+    --red:#fb7185;
+    --max:1000px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--bg);color:var(--txt);
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.75;font-size:16.5px;
+  }
+  a{color:var(--blue);text-decoration:none}
+  h2{font-size:1.45rem;margin:0 0 4px;display:flex;align-items:center;gap:10px}
+  h2::before{content:"";width:5px;height:24px;border-radius:3px;background:linear-gradient(var(--blue),var(--green))}
+  h3{font-size:1.05rem;margin:24px 0 6px;color:var(--blue)}
+  h4{margin:0 0 6px;font-size:1rem}
+  p{margin:8px 0}
+  .lead{color:var(--muted);margin:0 0 18px}
+
+  header{
+    background:linear-gradient(135deg,#12212e,#16212c);
+    border-bottom:1px solid var(--line);
+    padding:44px 20px 36px;text-align:center;
+  }
+  header h1{margin:0 0 10px;font-size:2rem;line-height:1.35}
+  header p{margin:0 auto;max-width:720px;color:var(--muted)}
+
+  nav{position:sticky;top:0;z-index:10;background:rgba(15,23,32,.93);
+      backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  nav .inner{max-width:var(--max);margin:0 auto;padding:9px 20px;display:flex;gap:6px;overflow-x:auto}
+  nav a{color:var(--muted);font-size:.9rem;padding:6px 11px;border-radius:8px;white-space:nowrap}
+  nav a:hover{background:var(--panel-2);color:var(--txt);text-decoration:none}
+
+  main{max-width:var(--max);margin:0 auto;padding:0 20px 70px}
+  section{padding-top:48px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+  .grid{display:grid;gap:14px}
+  .g2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+  .g3{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+  .g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  .tier{border-left:4px solid var(--blue);padding-left:14px}
+  .tier.t2{border-color:var(--green)}
+  .tier.t3{border-color:var(--yellow)}
+  .tier.t4{border-color:var(--red)}
+  .who{font-size:.72rem;letter-spacing:1px;text-transform:uppercase;color:var(--blue);font-weight:700}
+  .tier.t2 .who{color:var(--green)}
+  .tier.t3 .who{color:var(--yellow)}
+  .tier.t4 .who{color:var(--red)}
+
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:.92rem}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+  th{background:var(--panel-2);color:var(--blue)}
+  td{background:var(--panel)}
+  tbody tr:nth-child(even) td{background:#141e28}
+
+  ul.clean{padding-left:22px;margin:8px 0}
+  ul.clean li{margin:6px 0}
+  ol.clean{padding-left:22px;margin:8px 0}
+  ol.clean li{margin:6px 0}
+  code{background:#0b1219;border:1px solid var(--line);border-radius:5px;padding:1px 6px;
+       font-family:Consolas,monospace;font-size:.85em;color:var(--green)}
+  pre{background:#0b1219;border:1px solid var(--line);border-radius:10px;padding:15px;
+      overflow-x:auto;font-family:Consolas,monospace;font-size:.82rem;line-height:1.7;color:#cbd5e1}
+
+  .say{background:rgba(76,195,245,.08);border:1px solid rgba(76,195,245,.3);
+       border-radius:12px;padding:16px 20px;margin:16px 0}
+  .say b.lab{color:var(--blue);font-size:.78rem;letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:4px}
+  .warn{background:rgba(251,191,36,.08);border-color:rgba(251,191,36,.32)}
+  .warn b.lab{color:var(--yellow)}
+  .try{background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.3)}
+  .try b.lab{color:var(--green)}
+  .stop{background:rgba(251,113,133,.08);border-color:rgba(251,113,133,.32)}
+  .stop b.lab{color:var(--red)}
+
+  .fig{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin:18px 0}
+  .fig svg{display:block;width:100%;height:auto}
+  .fig figcaption{color:var(--muted);font-size:.85rem;margin-top:10px;text-align:center}
+  .b1{fill:#16374a;stroke:#4cc3f5}
+  .b2{fill:#143a2a;stroke:#4ade80}
+  .b3{fill:#3c3110;stroke:#fbbf24}
+  .b4{fill:#3d1a22;stroke:#fb7185}
+  .bn{fill:#1c2a37;stroke:#2b3b4b}
+  .tt{fill:#e8eef4;font-size:14px;text-anchor:middle;font-family:"Segoe UI",sans-serif;font-weight:600}
+  .ts{fill:#a5b6c6;font-size:12px;text-anchor:middle;font-family:"Segoe UI",sans-serif}
+  .hd{fill:#4cc3f5;font-size:12px;text-anchor:middle;font-weight:700;letter-spacing:1px;font-family:"Segoe UI",sans-serif}
+  .ar{stroke:#5a7286;stroke-width:2;fill:none;marker-end:url(#ah)}
+
+  details.qa{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin-bottom:9px;overflow:hidden}
+  details.qa[open]{border-color:rgba(76,195,245,.45)}
+  details.qa summary{cursor:pointer;padding:13px 16px;font-weight:600;list-style:none;display:flex;gap:10px}
+  details.qa summary::-webkit-details-marker{display:none}
+  details.qa summary::before{content:"+";color:var(--blue);font-weight:700;line-height:1.5}
+  details.qa[open] summary::before{content:"\2212"}
+  details.qa .body{padding:0 16px 14px 38px;color:#cfdae6;font-size:.95rem}
+  .hide{display:none !important}
+  .tools{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px}
+  input[type=search]{flex:1;min-width:210px;background:#0b1219;color:var(--txt);border:1px solid var(--line);
+    border-radius:10px;padding:10px 14px;font-size:.95rem}
+  input[type=search]:focus{outline:none;border-color:var(--blue)}
+
+  .steps{counter-reset:s;list-style:none;padding-left:0;margin:10px 0}
+  .steps li{counter-increment:s;position:relative;padding:0 0 0 40px;margin:12px 0;min-height:28px}
+  .steps li::before{content:counter(s);position:absolute;left:0;top:1px;width:26px;height:26px;border-radius:50%;
+    background:var(--panel-2);border:1px solid var(--line);color:var(--blue);font-weight:700;font-size:.85rem;
+    display:flex;align-items:center;justify-content:center}
+
+  footer{border-top:1px solid var(--line);padding:22px;text-align:center;color:var(--muted);font-size:.85rem}
+  @media(max-width:640px){header h1{font-size:1.5rem}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🕵️ How a SOC Actually Works<br><span style="font-size:1.15rem;color:var(--green)">Logs &amp; Correlation · Threat Intelligence · Detection &amp; Response</span></h1>
+  <p>A very simple guide, written for students. Everything is explained in normal language,
+     with school-life examples and a picture for every big idea.</p>
+</header>
+
+<nav><div class="inner">
+  <a href="#start">0. Before we start</a>
+  <a href="#logs">1. Log Collection &amp; Correlation</a>
+  <a href="#intel">2. Threat Intelligence</a>
+  <a href="#ir">3. Detection &amp; Response</a>
+  <a href="#story">4. One Story, All Three</a>
+  <a href="#glossary">5. Words to Know</a>
+  <a href="#qa">6. Q&amp;A</a>
+  <a href="#quiz">7. Quick Quiz</a>
+</div></nav>
+
+<main>
+
+<!-- 0 -->
+<section id="start">
+  <h2>0. Before we start — the three jobs of a SOC</h2>
+  <p class="lead">You already know a SOC is the team that watches a company's computers.
+     This page explains the <b>three main jobs</b> that team does, one by one.</p>
+
+  <div class="say">
+    <b class="lab">In one line</b>
+    A SOC does three things: <b>(1) collects and joins the clues (logs)</b>,
+    <b>(2) learns who the bad guys are (threat intelligence)</b>, and
+    <b>(3) notices an attack and stops it (detection &amp; response).</b>
+  </div>
+
+  <div class="card">
+    <h4>Think of your school again</h4>
+    <p><b>Job 1 — Log Collection &amp; Correlation:</b> every classroom has a diary. Somebody must
+      <b>gather all the diaries</b> into one room, read them together, and notice the pattern:
+      <i>"the same student's password was rejected 20 times, and then the exam hall door opened."</i></p>
+    <p><b>Job 2 — Threat Intelligence:</b> the police station keeps a list of known thieves —
+      their photos, their tricks, the areas they work in. Your school gets that list and tells the
+      watchman: <i>"these three people are not allowed inside."</i></p>
+    <p><b>Job 3 — Incident Detection &amp; Response:</b> the moment something really goes wrong —
+      a fight, a theft, a fire — the alarm rings and a <b>fixed plan</b> runs:
+      stop it, fix it, check the damage, and make sure it never happens again.</p>
+  </div>
+
+  <div class="grid g3">
+    <div class="card tier">
+      <span class="who">Job 1 — Clues</span>
+      <h4>Logs &amp; Correlation</h4>
+      <p style="margin:0;font-size:.93rem">Collect the records written by every computer, make them
+      the same, and join them into one story.</p>
+      <p style="margin:8px 0 0;font-size:.9rem;color:var(--muted)"><b>Like:</b> reading all the
+      class diaries together instead of one at a time.</p>
+    </div>
+    <div class="card tier t2">
+      <span class="who">Job 2 — Knowledge</span>
+      <h4>Threat Intelligence</h4>
+      <p style="margin:0;font-size:.93rem">Keep a list of known attackers, bad websites and their
+      tricks, so you know <b>what to look for</b>.</p>
+      <p style="margin:8px 0 0;font-size:.9rem;color:var(--muted)"><b>Like:</b> the police list of
+      known thieves handed to the school watchman.</p>
+    </div>
+    <div class="card tier t3">
+      <span class="who">Job 3 — Action</span>
+      <h4>Detection &amp; Response</h4>
+      <p style="margin:0;font-size:.93rem">Spot the attack early, then follow a fixed plan to stop
+      it, clean up, and write down what to change.</p>
+      <p style="margin:8px 0 0;font-size:.9rem;color:var(--muted)"><b>Like:</b> the fire alarm plan:
+      get out, call the fire brigade, then check why it started.</p>
+    </div>
+  </div>
+
+  <figure class="fig">
+    <svg viewBox="0 0 900 250" role="img" aria-label="Three jobs of a SOC in a row: logs, threat intelligence, response">
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="#5a7286"/>
+        </marker>
+      </defs>
+      <text x="450" y="24" class="hd">THE THREE JOBS OF A SOC</text>
+
+      <rect x="25" y="56" width="255" height="120" class="b1"/>
+      <text x="152" y="82" class="tt">1 · Logs &amp; Correlation</text>
+      <text x="152" y="106" class="ts">collect the records</text>
+      <text x="152" y="126" class="ts">join them into one story</text>
+      <text x="152" y="150" class="ts" fill="#4cc3f5">"what happened?"</text>
+
+      <path d="M285 116 L330 116" class="ar"/>
+
+      <rect x="335" y="56" width="255" height="120" class="b2"/>
+      <text x="462" y="82" class="tt">2 · Threat Intelligence</text>
+      <text x="462" y="106" class="ts">list of known bad guys</text>
+      <text x="462" y="126" class="ts">their tricks and addresses</text>
+      <text x="462" y="150" class="ts" fill="#4ade80">"who should we fear?"</text>
+
+      <path d="M595 116 L640 116" class="ar"/>
+
+      <rect x="645" y="56" width="255" height="120" class="b3"/>
+      <text x="772" y="82" class="tt">3 · Detect &amp; Respond</text>
+      <text x="772" y="106" class="ts">spot the attack early</text>
+      <text x="772" y="126" class="ts">stop it and clean up</text>
+      <text x="772" y="150" class="ts" fill="#fbbf24">"what do we do now?"</text>
+
+      <text x="450" y="205" class="ts">Job 1 gives the clues · Job 2 gives the knowledge · Job 3 gives the action</text>
+      <text x="450" y="228" class="ts">Remove any one of them and the other two stop working properly.</text>
+    </svg>
+    <figcaption>Picture 1 — The three jobs, in the order they depend on each other.</figcaption>
+  </figure>
+
+  <div class="say try">
+    <b class="lab">How to use this page</b>
+    Read section 1, then 2, then 3. Section 4 puts all three together in one short story.
+    At the end there is a word list, questions with answers, and a quiz to check yourself.
+  </div>
+</section>
+
+<!-- 1 LOGS -->
+<section id="logs">
+  <h2>1. Log Collection &amp; Correlation</h2>
+  <p class="lead">This is the <b>raw material</b> of all security work. Without good logs, a SOC is
+     blind. We start with what a log is, then how logs are gathered, then the big idea: correlation.</p>
+
+  <div class="say">
+    <b class="lab">In one line</b>
+    <b>Log collection</b> means pulling the small records written by every computer into one place.
+    <b>Correlation</b> means joining many small records into <b>one big, meaningful story</b>.
+  </div>
+
+  <h3>1.1 What is a log?</h3>
+  <div class="card">
+    <p>A <b>log</b> is a line a computer writes down by itself, automatic, without anybody asking:
+      <i>"this happened at this time."</i> Like a diary entry, or a school attendance register.</p>
+    <p><code>10:04:12  Ravi  LOGIN-SUCCESS  192.168.1.14</code></p>
+    <p><code>10:07:55  Ravi  LOGIN-FAILED  (wrong password)</code></p>
+    <p>Every device writes its own logs: laptops, phones, the Wi-Fi router, the firewall, the
+      website server, the email system, the cloud account, even the CCTV. In a company there can be
+      <b>hundreds of sources</b> and <b>millions of lines per day</b>.</p>
+    <p style="margin:0;font-size:.94rem;color:var(--muted)"><b>Three things every log must have:</b>
+      <b>When</b> (time), <b>Who</b> (user or device), <b>What</b> (the action). If any one is
+      missing, the log is much less useful.</p>
+  </div>
+
+  <h3>1.2 Where do logs come from?</h3>
+  <table>
+    <thead><tr><th>Source</th><th>What it writes down</th><th>Why the SOC cares</th></tr></thead>
+    <tbody>
+      <tr><td><b>Operating system</b> (Windows/Linux)</td><td>Who logged in, which program ran, which file was changed</td><td>Stolen passwords and hidden attacker programs show up here</td></tr>
+      <tr><td><b>Firewall</b></td><td>Which connection was allowed, which was blocked</td><td>Shows somebody trying to reach a machine from outside</td></tr>
+      <tr><td><b>Antivirus / EDR</b></td><td>Which file was suspicious, what it tried to do</td><td>Direct evidence of a harmful program</td></tr>
+      <tr><td><b>Email server</b></td><td>Who sent what, which links were clicked</td><td>Phishing mails and fake invoices arrive here</td></tr>
+      <tr><td><b>Web server / website</b></td><td>Every page request, every form submission</td><td>Shows hacking attempts against your website</td></tr>
+      <tr><td><b>Cloud account</b> (Google, AWS, Microsoft 365)</td><td>Who created a new key, who shared a file, who logged in from abroad</td><td>Attackers love cloud accounts — nobody watches them</td></tr>
+      <tr><td><b>Wi-Fi / router</b></td><td>Which device joined the network</td><td>A stranger's phone on your office Wi-Fi is a warning sign</td></tr>
+      <tr><td><b>Applications</b> (bank app, school portal)</td><td>Money transferred, marks changed, password reset</td><td>Shows fraud and misuse by people who should be trusted</td></tr>
+    </tbody>
+  </table>
+
+  <div class="say warn">
+    <b class="lab">Golden rule</b>
+    Collect the logs <b>before</b> an attack happens. After the attack, the first thing a clever
+    attacker does is <b>delete his own records</b>. That is why copies are sent to another place,
+    within seconds, where the attacker cannot reach them.
+  </div>
+
+  <h3>1.3 How the logs travel — the pipeline</h3>
+  <p>Logs do not magically appear in one place. They travel through a pipeline, like post going
+     from many houses to one post office.</p>
+
+  <figure class="fig">
+    <svg viewBox="0 0 960 420" role="img" aria-label="Six step log collection pipeline from sources to alert">
+      <text x="480" y="24" class="hd">LOG PIPELINE — FROM RAW LINES TO ONE ALARM</text>
+
+      <rect x="20" y="60" width="200" height="90" class="bn"/>
+      <text x="120" y="86" class="ts" fill="#4cc3f5" font-weight="700">STEP 1</text>
+      <text x="120" y="110" class="tt">Sources</text>
+      <text x="120" y="132" class="ts">laptop, phone, firewall,</text>
+      <text x="120" y="148" class="ts">website, cloud, Wi-Fi</text>
+
+      <path d="M224 105 L256 105" class="ar"/>
+
+      <rect x="260" y="60" width="200" height="90" class="bn"/>
+      <text x="360" y="86" class="ts" fill="#4cc3f5" font-weight="700">STEP 2</text>
+      <text x="360" y="110" class="tt">Collect</text>
+      <text x="360" y="132" class="ts">an agent pushes them out</text>
+      <text x="360" y="148" class="ts">or the SIEM pulls them in</text>
+
+      <path d="M464 105 L496 105" class="ar"/>
+
+      <rect x="500" y="60" width="200" height="90" class="bn"/>
+      <text x="600" y="86" class="ts" fill="#4cc3f5" font-weight="700">STEP 3</text>
+      <text x="600" y="110" class="tt">Clean &amp; Store</text>
+      <text x="600" y="132" class="ts">remove junk, fix the time,</text>
+      <text x="600" y="148" class="ts">keep a safe copy</text>
+
+      <path d="M704 105 L736 105" class="ar"/>
+
+      <rect x="740" y="60" width="200" height="90" class="bn"/>
+      <text x="840" y="86" class="ts" fill="#4cc3f5" font-weight="700">STEP 4</text>
+      <text x="840" y="110" class="tt">Make same</text>
+      <text x="840" y="132" class="ts">one common format</text>
+      <text x="840" y="148" class="ts">(normalisation)</text>
+
+      <path d="M840 154 L840 190 L120 190 L120 226" class="ar"/>
+
+      <rect x="20" y="230" width="290" height="90" class="b2"/>
+      <text x="165" y="256" class="ts" fill="#4ade80" font-weight="700">STEP 5</text>
+      <text x="165" y="280" class="tt">Correlate (join the dots)</text>
+      <text x="165" y="302" class="ts">rules look for patterns</text>
+      <text x="165" y="318" class="ts">across many logs at once</text>
+
+      <path d="M314 275 L346 275" class="ar"/>
+
+      <rect x="350" y="230" width="290" height="90" class="b3"/>
+      <text x="495" y="256" class="ts" fill="#fbbf24" font-weight="700">STEP 6</text>
+      <text x="495" y="280" class="tt">One clear alarm</text>
+      <text x="495" y="302" class="ts">sent to the analyst with</text>
+      <text x="495" y="318" class="ts">what to do next</text>
+
+      <path d="M644 275 L676 275" class="ar"/>
+
+      <rect x="680" y="230" width="260" height="90" class="b1"/>
+      <text x="810" y="256" class="ts" fill="#4cc3f5" font-weight="700">SOC ANALYST</text>
+      <text x="810" y="280" class="tt">Reads it in 10 seconds</text>
+      <text x="810" y="302" class="ts">and decides:</text>
+      <text x="810" y="318" class="ts">real attack or false alarm?</text>
+
+      <text x="480" y="360" class="ts">Steps 1–4 happen every second, all day, by themselves.</text>
+      <text x="480" y="382" class="ts">Step 5 is where the clever thinking happens — and it is the part called CORRELATION.</text>
+      <text x="480" y="404" class="ts">Step 6 is the only step a human actually sees.</text>
+    </svg>
+    <figcaption>Picture 2 — The six steps a log travels through before a human reads anything.</figcaption>
+  </figure>
+
+  <h3>1.4 The two ways logs are collected</h3>
+  <div class="grid g2">
+    <div class="card">
+      <h4>(a) Push — a small program on each device</h4>
+      <p style="margin:0;font-size:.94rem">A tiny program called an <b>agent</b> is installed on the
+      computer. It watches the log file and <b>sends a copy out</b> to the central place, in seconds.</p>
+      <ul class="clean" style="font-size:.92rem">
+        <li><b>Good:</b> very fast, works even if the device is far away, can also send files and alerts</li>
+        <li><b>Bad:</b> you must install and update it on every device</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>(b) Pull — collect over the network</h4>
+      <p style="margin:0;font-size:.94rem">Nothing is installed. The central system
+      <b>reaches out over the network</b> and reads the logs, like borrowing a diary for an hour.</p>
+      <ul class="clean" style="font-size:.92rem">
+        <li><b>Good:</b> nothing to install — handy for routers, cloud services and old devices</li>
+        <li><b>Bad:</b> slower, some devices refuse to share, and if the network dies you lose time</li>
+      </ul>
+    </div>
+  </div>
+  <p style="font-size:.94rem;color:var(--muted)">Big companies use <b>both</b>. A third common method is
+     the device <b>pushing to a middle box</b> (a syslog server or a cloud collector), which then
+     forwards everything onward — so the main system only talks to one box.</p>
+
+  <h3>1.5 Correlation — the most important word on this page</h3>
+
+  <div class="say">
+    <b class="lab">Correlation in one line</b>
+    <b>Correlation = joining many small, ordinary events into one big, meaningful event</b>
+    by using a rule that a human wrote.
+  </div>
+
+  <div class="card">
+    <h4>Why one log is never enough</h4>
+    <p>Read these three lines. On their own, each is <b>completely normal</b>:</p>
+<pre>09:00  Ravi opened his email                     ← normal
+09:01  Ravi clicked a link in an email            ← normal
+09:02  A file named "Exam2026.xlsx" was copied    ← normal (he always copies it)</pre>
+    <p>Now read them <b>together</b>: a link was clicked, and <b>one second later</b> the only copy of
+      the exam paper left the computer — at 9 in the morning, by a user who is on leave today.
+      <b>Same three lines. Completely different meaning.</b></p>
+    <p style="margin:0">A single computer cannot see this. It only knows its own diary. A person
+      reading one line at a time cannot see it either — nobody can hold 4,000 lines in their head.
+      <b>That job belongs to the correlation engine.</b></p>
+  </div>
+
+  <h3>1.6 The four kinds of correlation rules</h3>
+  <div class="grid g2">
+    <div class="card tier">
+      <span class="who">Rule type 1</span>
+      <h4>Counting (threshold)</h4>
+      <p style="margin:0;font-size:.94rem">"If the <b>same thing happens too many times</b>, alarm."</p>
+      <p style="margin:8px 0 0;font-size:.9rem;font-family:Consolas,monospace;color:var(--yellow)">
+        10 wrong passwords in 5 minutes → HIGH alarm</p>
+      <p style="margin:8px 0 0;font-size:.9rem;color:var(--muted)">Catches: password guessing,
+      someone scanning your website, a program flooding the server.</p>
+    </div>
+    <div class="card tier t2">
+      <span class="who">Rule type 2</span>
+      <h4>Order (sequence)</h4>
+      <p style="margin:0;font-size:.94rem">"If <b>event A happens, then B, then C</b> — in that order — alarm."</p>
+      <p style="margin:8px 0 0;font-size:.9rem;font-family:Consolas,monospace;color:var(--yellow)">
+        download → change settings → delete logs → alarm</p>
+      <p style="margin:8px 0 0;font-size:.9rem;color:var(--muted)">Catches: a real attack following its
+      usual steps, even if each step alone looks harmless.</p>
+    </div>
+    <div class="card tier t3">
+      <span class="who">Rule type 3</span>
+      <h4>Combining (two logs together)</h4>
+      <p style="margin:0;font-size:.94rem">"If a thing happens in <b>two different places at once</b>, alarm."</p>
+      <p style="margin:8px 0 0;font-size:.9rem;font-family:Consolas,monospace;color:var(--yellow)">
+        login from abroad + file copied → alarm</p>
+      <p style="margin:8px 0 0;font-size:.9rem;color:var(--muted)">Catches: stolen passwords, because the
+      person is in one city and the login is in another.</p>
+    </div>
+    <div class="card tier t4">
+      <span class="who">Rule type 4</span>
+      <h4>Difference from normal (unusual behaviour)</h4>
+      <p style="margin:0;font-size:.94rem">"This user <b>never does this</b>, but did it today — alarm."</p>
+      <p style="margin:8px 0 0;font-size:.9rem;font-family:Consolas,monospace;color:var(--yellow)">
+        normally 20 files/day → today 4,000 files → alarm</p>
+      <p style="margin:8px 0 0;font-size:.9rem;color:var(--muted)">Catches: insider misuse and quiet
+      attackers, with <b>no list of bad guys needed at all</b>. A tool called <b>UEBA</b> does this.</p>
+    </div>
+  </div>
+
+  <div class="say warn">
+    <b class="lab">Be careful</b>
+    Every rule must be <b>tested before switching it on</b>. A badly written rule fires on the
+    nightly backup (which always copies 4,000 files) and shouts <b>"ATTACK!"</b> every night at 2 a.m.
+    After a week the tired analyst stops believing any alarm. <b>Too many false alarms is as
+    dangerous as no alarms at all.</b>
+  </div>
+
+  <h3>1.7 A worked example — three logs, one alarm</h3>
+<pre>LOG 1  (from the laptop)    14:02  Ravi clicked a link in an email
+LOG 2  (from the firewall)   14:03  connection to 198.51.100.9  (a known bad website)
+LOG 3  (from the file server)14:04  "Answer-Key.pdf" downloaded, then the log was cleared</pre>
+  <div class="card">
+    <ol class="clean">
+      <li><b>Collect:</b> three logs from three different devices arrive at the SIEM.</li>
+      <li><b>Make same:</b> all three are rewritten with the same labels:
+        <code>time</code>, <code>user</code>, <code>action</code>, <code>device</code>.</li>
+      <li><b>Add facts:</b> <code>198.51.100.9</code> is on the known-bad list. Ravi's account can open
+        the answer key. The log-clearing action is rare and suspicious.</li>
+      <li><b>Correlate:</b> the rule says — <i>email link → bad website within 2 minutes →
+        important file downloaded → log cleared → <b>HIGH alarm</b></i>.</li>
+      <li><b>Alarm:</b> one message, one next step: <i>disconnect the laptop now.</i></li>
+    </ol>
+  </div>
+
+  <figure class="fig">
+    <svg viewBox="0 0 900 320" role="img" aria-label="Three small logs joined by a rule into one alarm">
+      <text x="450" y="22" class="hd">CORRELATION: THREE ORDINARY LINES BECOME ONE DANGER</text>
+
+      <text x="190" y="52" class="hd">THE THREE LOGS</text>
+      <rect x="20" y="64" width="340" height="46" class="bn"/>
+      <text x="190" y="92" class="ts">14:02  link clicked in an email</text>
+      <rect x="20" y="118" width="340" height="46" class="bn"/>
+      <text x="190" y="146" class="ts">14:03  visited a bad website</text>
+      <rect x="20" y="172" width="340" height="46" class="bn"/>
+      <text x="190" y="200" class="ts">14:04  exam file taken + log cleared</text>
+      <text x="190" y="246" class="ts" fill="#fb7185">Alone: all three look ordinary.</text>
+      <text x="190" y="270" class="ts" fill="#fb7185">Together: a complete attack.</text>
+
+      <path d="M370 142 L440 142" stroke="#4ade80" stroke-width="3" fill="none" marker-end:url(#ah)/>
+      <text x="405" y="128" class="hd" fill="#4ade80" font-size="11">RULE</text>
+
+      <rect x="450" y="64" width="430" height="216" class="b3"/>
+      <text x="665" y="96" class="tt" fill="#fbbf24" font-size="15">🚨 HIGH ALARM — phishing worked</text>
+      <text x="665" y="126" class="ts">User: Ravi (exam cell account)</text>
+      <text x="665" y="150" class="ts">Clicked a link at 14:02</text>
+      <text x="665" y="174" class="ts">Visited a known-bad website at 14:03</text>
+      <text x="665" y="198" class="ts">Answer key copied at 14:04</text>
+      <text x="665" y="222" class="ts">Someone tried to erase the log</text>
+      <text x="665" y="254" class="ts" fill="#4ade80" font-weight="700">Next step: unplug the laptop, change the password</text>
+
+      <text x="450" y="304" class="ts">No single log said "attack". The pattern said it.</text>
+    </svg>
+    <figcaption>Picture 3 — Correlation is the rule that joins separate logs into a single story.</figcaption>
+  </figure>
+
+  <h3>1.8 What usually goes wrong (and the fix)</h3>
+  <table>
+    <thead><tr><th>Problem</th><th>What happens</th><th>Simple fix</th></tr></thead>
+    <tbody>
+      <tr><td><b>Silent gaps</b></td><td>One computer quietly stops sending logs. Nobody notices for two weeks — and the attack happened in those two weeks.</td><td>Send a tiny "I am alive" message every hour. If it stops, raise an alarm.</td></tr>
+      <tr><td><b>Clocks not matching</b></td><td>Computer A says 2:00, computer B says 1:40 for the same event. Now you cannot prove what happened first.</td><td>Set every clock automatically from the same time source (NTP).</td></tr>
+      <tr><td><b>Collecting the wrong things</b></td><td>Ten thousand useless messages a day, while the important ones are missing.</td><td>Write down a list of what you need — and check that list every month.</td></tr>
+      <tr><td><b>Logs deleted by the attacker</b></td><td>The attacker erases his trail on the machine he broke into.</td><td>Copy logs elsewhere within seconds, and raise an alarm if a log is cleared.</td></tr>
+      <tr><td><b>Too much noise</b></td><td>5,000 alarms a day, only 3 real. The team stops reading them.</td><td>Tune the rules, switch off the noisy ones, group similar alarms together.</td></tr>
+      <tr><td><b>Logs kept for too short a time</b></td><td>You discover the attack three months later — and the proof is already deleted.</td><td>Keep them as long as the law or the company requires (often 6–12 months).</td></tr>
+    </tbody>
+  </table>
+
+  <div class="say try">
+    <b class="lab">Remember this</b>
+    <b>Collection</b> gets the clues. <b>Correlation</b> makes sense of them.
+    Without collection you have nothing to read. Without correlation you have a mountain of
+    nothing. <b>You need both.</b>
+  </div>
+</section>
+
+<!-- 2 THREAT INTEL -->
+<section id="intel">
+  <h2>2. Threat Intelligence</h2>
+  <p class="lead">Now you know how logs are gathered. But a SOC cannot guess every attack —
+     it also needs <b>information about the enemy</b>. That information is called threat intelligence.</p>
+
+  <div class="say">
+    <b class="lab">In one line</b>
+    <b>Threat intelligence (TI)</b> is <b>useful, checked information about who might attack you,
+    how they do it, and what their tools look like</b> — collected, studied and shared so you can
+    act before they arrive.
+  </div>
+
+  <h3>2.1 Think of the weather forecast</h3>
+  <div class="card">
+    <p>Every morning the news tells you: <i>"rain is likely in your city today, carry an umbrella,
+      and here are the three areas where water will collect."</i></p>
+    <p><b>Threat intelligence is exactly that, for cyber attacks.</b></p>
+    <ul class="clean">
+      <li><b>Forecast:</b> "Phishing mails pretending to be your bank are spreading this week."</li>
+      <li><b>Areas that flood:</b> "They target people in the accounts department."</li>
+      <li><b>Carry an umbrella:</b> "Block these 40 websites and warn your staff today."</li>
+    </ul>
+    <p style="margin:0">Without a forecast you find out it rained <b>after</b> you got wet.
+      Without threat intelligence you find out about an attack <b>after</b> you are hit.</p>
+  </div>
+
+  <h3>2.2 Two kinds of clues: IoC and TTP</h3>
+  <div class="grid g2">
+    <div class="card tier">
+      <span class="who">The fingerprints — IoC</span>
+      <h4>Indicators of Compromise</h4>
+      <p style="margin:0 0 8px;font-size:.94rem"><b>IoC</b> = a small piece of evidence that says
+      <i>"something bad was here."</i> It is the fingerprint, not the criminal.</p>
+      <ul class="clean" style="font-size:.92rem">
+        <li><b>IP address</b> — the network address of a known attacker</li>
+        <li><b>Domain / URL</b> — a fake login website</li>
+        <li><b>File hash</b> — the unique "fingerprint number" of a harmful program</li>
+        <li><b>Email address / subject</b> — the sender of a phishing mail</li>
+        <li><b>File name and path</b> — where the attacker hides his tool</li>
+      </ul>
+      <p style="margin:8px 0 0;font-size:.9rem;color:var(--muted)"><b>Easy to use</b> — you simply
+      block the list. But it <b>goes stale fast</b>: an attacker can change his website in a minute.</p>
+    </div>
+    <div class="card tier t2">
+      <span class="who">The habits — TTP</span>
+      <h4>Tactics, Techniques &amp; Procedures</h4>
+      <p style="margin:0 0 8px;font-size:.94rem"><b>TTP</b> = <b>how</b> the attacker works — his
+      habits and tricks. This is the criminal's style, not his fingerprint.</p>
+      <ul class="clean" style="font-size:.92rem">
+        <li><b>When</b> they work — usually nights and weekends</li>
+        <li><b>What they do first</b> — send a phishing mail, then move quietly</li>
+        <li><b>Which tools</b> they like to use</li>
+        <li><b>Which targets</b> they prefer — schools, banks, hospitals</li>
+        <li><b>Which mistakes</b> they keep repeating</li>
+      </ul>
+      <p style="margin:8px 0 0;font-size:.9rem;color:var(--muted)"><b>Harder to use</b>, but it
+      <b>stays useful for years</b> — because a person's habits change slowly. It also catches
+      attacks that use <b>brand new</b> files nobody has ever seen.</p>
+    </div>
+  </div>
+
+  <div class="say">
+    <b class="lab">A simple way to remember it</b>
+    An <b>IoC</b> answers: <i>"is this exact thing bad?"</i><br>
+    A <b>TTP</b> answers: <i>"is this the way a bad guy behaves?"</i><br>
+    Police work the same way — a fingerprint is an IoC; "always enters through the back gate at
+    midnight" is a TTP.
+  </div>
+
+  <h3>2.3 The four levels of threat intelligence</h3>
+  <p>Different people in a company need different kinds of information — like how a student, a
+     teacher and the principal each read a different part of the same report.</p>
+  <table>
+    <thead><tr><th>Level</th><th>The question it answers</th><th>Who reads it</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td><b>Strategic</b></td><td><i>Who is likely to attack us, and why?</i></td><td>Board / Director</td><td>"Hackers targeting schools in our country have doubled this year."</td></tr>
+      <tr><td><b>Operational</b></td><td><i>Is an attack being planned against us right now?</i></td><td>SOC Manager</td><td>"A group is talking about attacking exam portals this week."</td></tr>
+      <tr><td><b>Tactical</b></td><td><i>How do the attackers work?</i></td><td>SOC Analysts</td><td>"They always start with a phishing email to the accounts team."</td></tr>
+      <tr><td><b>Technical</b></td><td><i>Exactly what should I block?</i></td><td>The tools (SIEM, firewall)</td><td>40 bad IP addresses, 120 bad links, 3 harmful file hashes.</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:.94rem;color:var(--muted)">Levels 3 and 4 go straight into the machines.
+     Levels 1 and 2 are read by people making decisions.</p>
+
+  <h3>2.4 Where does this information come from?</h3>
+  <div class="grid g3">
+    <div class="card"><h4>📡 Open &amp; free</h4>
+      <p style="margin:0;font-size:.93rem">Anyone can read them: <b>Abuse.ch</b>, <b>VirusTotal</b>,
+      <b>AlienVault OTX</b>, government CERT alerts, and lists shared by other companies for free.</p>
+      <p style="margin:8px 0 0;font-size:.88rem;color:var(--muted)">Good for beginners and small
+      schools. Can be messy and partly wrong.</p></div>
+    <div class="card"><h4>💰 Commercial (paid)</h4>
+      <p style="margin:0;font-size:.93rem">Companies whose whole business is researching attackers.
+      They send cleaned, checked, ready-to-use lists every day.</p>
+      <p style="margin:8px 0 0;font-size:.88rem;color:var(--muted)">Accurate and fast — but costly.</p></div>
+    <div class="card"><h4>🏛️ Sharing groups</h4>
+      <p style="margin:0;font-size:.93rem"><b>ISACs</b> — groups where all the banks share warnings
+      with each other, all hospitals with hospitals, all schools with schools.</p>
+      <p style="margin:8px 0 0;font-size:.88rem;color:var(--muted)">Best source, because the warning
+      comes from somebody in <b>your own field</b>.</p></div>
+    <div class="card"><h4>🕵️ Your ownSOC</h4>
+      <p style="margin:0;font-size:.93rem">Your own logs from section 1! If 50 people in your company
+      got the same fake mail today, <b>you</b> have intelligence nobody else has.</p>
+      <p style="margin:8px 0 0;font-size:.88rem;color:var(--muted)">Called <b>internal</b> intelligence.
+      It is the most accurate of all.</p></div>
+    <div class="card"><h4>🕸️ Dark web</h4>
+      <p style="margin:0;font-size:.93rem">Hidden websites where stolen data is sold. Analysts read
+      them to find out if <b>your</b> company's passwords are already for sale.</p>
+      <p style="margin:8px 0 0;font-size:.88rem;color:var(--muted)">Dangerous and needs experts.</p></div>
+    <div class="card"><h4>🧾 Certificates &amp; standards</h4>
+      <p style="margin:0;font-size:.93rem">A common format called <b>STIX</b> and a sharing method
+      called <b>TAXII</b> let different companies exchange intelligence automatically — like a
+      shared news wire.</p>
+      <p style="margin:8px 0 0;font-size:.88rem;color:var(--muted)">This is how machines "talk" threat
+      intelligence to each other.</p></div>
+  </div>
+
+  <h3>2.5 The life cycle of intelligence</h3>
+  <p>Intelligence is not bought once and forgotten. It goes round in a circle, like a school
+     committee that plans, acts, checks and improves.</p>
+
+  <figure class="fig">
+    <svg viewBox="0 0 900 300" role="img" aria-label="Five steps of the threat intelligence life cycle">
+      <defs>
+        <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="#5a7286"/>
+        </marker>
+      </defs>
+      <text x="450" y="24" class="hd">THREAT INTELLIGENCE LIFE CYCLE — IT NEVER ENDS</text>
+
+      <rect x="20" y="60" width="165" height="96" class="bn"/>
+      <text x="102" y="86" class="ts" fill="#4cc3f5" font-weight="700">1 · DIRECTION</text>
+      <text x="102" y="110" class="tt">Decide</text>
+      <text x="102" y="132" class="ts">what we need to know</text>
+      <text x="102" y="148" class="ts">and why it matters</text>
+
+      <path d="M188 108 L214 108" class="ar"/>
+
+      <rect x="218" y="60" width="165" height="96" class="bn"/>
+      <text x="300" y="86" class="ts" fill="#4cc3f5" font-weight="700">2 · COLLECTION</text>
+      <text x="300" y="110" class="tt">Gather</text>
+      <text x="300" y="132" class="ts">feeds, reports, your own</text>
+      <text x="300" y="148" class="ts">logs, insider warnings</text>
+
+      <path d="M386 108 L412 108" class="ar"/>
+
+      <rect x="416" y="60" width="165" height="96" class="b2"/>
+      <text x="498" y="86" class="ts" fill="#4ade80" font-weight="700">3 · PROCESSING</text>
+      <text x="498" y="110" class="tt">Check</text>
+      <text x="498" y="132" class="ts">is it true? is it new?</text>
+      <text x="498" y="148" class="ts">sort it, remove junk</text>
+
+      <path d="M584 108 L610 108" class="ar"/>
+
+      <rect x="614" y="60" width="165" height="96" class="b3"/>
+      <text x="696" y="86" class="ts" fill="#fbbf24" font-weight="700">4 · ANALYSIS</text>
+      <text x="696" y="110" class="tt">Understand</text>
+      <text x="696" y="132" class="ts">what does it mean</text>
+      <text x="696" y="148" class="ts">for OUR company?</text>
+
+      <path d="M782 108 L808 108" class="ar"/>
+
+      <rect x="812" y="60" width="68" height="96" class="b4"/>
+      <text x="846" y="96" class="ts" fill="#fb7185" font-weight="700">5</text>
+      <text x="846" y="118" class="tt" font-size="12">DIS-</text>
+      <text x="846" y="136" class="tt" font-size="12">TRIBUTE</text>
+
+      <path d="M846 160 L846 210 L102 210 L102 164" class="ar"/>
+      <text x="470" y="232" class="ts">… and then it starts again, because attackers change their tricks every week.</text>
+
+      <rect x="20" y="250" width="860" height="36" class="bn"/>
+      <text x="450" y="274" class="ts">Send it to the SIEM (block the list), to the firewall, and to the whole team (a warning mail).</text>
+    </svg>
+    <figcaption>Picture 4 — Intelligence that is never checked and never updated becomes worthless.</figcaption>
+  </figure>
+
+  <h3>2.6 Bad intelligence is worse than none</h3>
+  <table>
+    <thead><tr><th>Mistake</th><th>What goes wrong</th></tr></thead>
+    <tbody>
+      <tr><td><b>Old (stale) data</b></td><td>An attacker's address changes daily. A list from last year blocks nobody and gives false confidence.</td></tr>
+      <tr><td><b>Wrong data</b></td><td>A free list wrongly marks a popular website as dangerous. Your company blocks it and business stops.</td></tr>
+      <tr><td><b>No context</b></td><td>"IP 203.0.113.7 is bad" means little. "…and it attacked 40 schools this month, pretending to be a teacher" makes somebody act.</td></tr>
+      <tr><td><b>Too much of it</b></td><td>10,000 new indicators every hour. If you load all of them, the machines drown and the humans stop reading.</td></tr>
+      <tr><td><b>Never checked</b></td><td>Nobody asks <i>"did this actually help us?"</i> — so the same useless feed is paid for every year.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="say">
+    <b class="lab">How it connects to section 1</b>
+    Remember <b>enrichment</b> — adding facts to a log? Threat intelligence is the main source of
+    those facts. The log says <code>198.51.100.9</code>; the intelligence feed says
+    <b>"this address belongs to a group that attacks schools."</b> Suddenly the log means something.
+    <b>Logs + intelligence = a useful alarm.</b>
+  </div>
+</section>
+
+<!-- 3 IR -->
+<section id="ir">
+  <h2>3. Incident Detection &amp; Response</h2>
+  <p class="lead">You have the clues (section 1) and the knowledge about the enemy (section 2).
+     Now comes the moment that matters: <b>something is actually happening</b> — and the SOC has to act.</p>
+
+  <div class="say">
+    <b class="lab">In one line</b>
+    <b>Detection</b> = noticing that an attack is going on. <b>Response</b> = the fixed plan you
+    follow to stop it, remove it, recover, and make sure it cannot happen again.
+  </div>
+
+  <h3>3.1 First: is it an alert or an incident?</h3>
+  <div class="grid g2">
+    <div class="card tier">
+      <span class="who">Alert (alarm)</span>
+      <h4>A warning signal</h4>
+      <p style="margin:0;font-size:.94rem">A message from a machine saying
+      <i>"something odd happened, please look."</i></p>
+      <p style="margin:8px 0 0;font-size:.93rem"><b>Example:</b> "22 wrong passwords in 4 minutes."</p>
+      <p style="margin:8px 0 0;font-size:.93rem;color:var(--muted)">Thousands arrive every day.
+      Most are harmless.</p>
+    </div>
+    <div class="card tier t4">
+      <span class="who">Incident</span>
+      <h4>A confirmed security event</h4>
+      <p style="margin:0;font-size:.94rem">A person has checked and decided:
+      <b>"Yes, this is a real attack on our company."</b></p>
+      <p style="margin:8px 0 0;font-size:.93rem"><b>Example:</b> "Phishing succeeded, one laptop is
+      infected, the answer key is gone."</p>
+      <p style="margin:8px 0 0;font-size:.93rem;color:var(--muted)">Few, but each one is serious
+      and gets a numbered case file.</p>
+    </div>
+  </div>
+  <p style="font-size:.94rem">Analogy: an <b>alert</b> is the smoke alarm beeping. An
+     <b>incident</b> is the fire brigade confirming there is a real fire. The beeping is not the
+     fire.</p>
+
+  <h3>3.2 How is an attack detected?</h3>
+  <table>
+    <thead><tr><th>Method</th><th>How it works, simply</th><th>Catches</th></tr></thead>
+    <tbody>
+      <tr><td><b>Rule-based detection</b></td><td>A human writes a rule: "10 wrong passwords → alarm." Exact and easy to explain.</td><td>Known, well-understood attacks</td></tr>
+      <tr><td><b>Anomaly detection</b></td><td>The machine first learns what <i>normal</i> looks like, then alarms on anything unusual. No rule needed.</td><td>New and strange attacks — but gives more false alarms</td></tr>
+      <tr><td><b>Behaviour analysis (UEBA)</b></td><td>Studies each <b>user and device</b>: "Ravi has never downloaded 4,000 files before."</td><td>Insiders, stolen accounts, quiet attackers</td></tr>
+      <tr><td><b>Matching threat intel</b></td><td>Compares everything you see against the bad-guy lists from section 2.</td><td>Attacks by already-known criminals</td></tr>
+      <tr><td><b>Threat hunting</b></td><td>A human <b>goes looking</b> on purpose, instead of waiting for an alarm. Asks "what if they are already inside?"</td><td>Attacks that produced no alarm at all</td></tr>
+      <tr><td><b>Somebody reports it</b></td><td>A staff member says "I got a strange mail." Simple, and still the most common first sign.</td><td>Almost everything — never ignore reports</td></tr>
+    </tbody>
+  </table>
+
+  <h3>3.3 Triage — deciding what matters first</h3>
+  <p>When ten alarms arrive together, the analyst must choose. Two things decide the order:
+     <b>how bad it is</b> and <b>how sure we are</b>.</p>
+  <table>
+    <thead><tr><th>Severity</th><th>Meaning</th><th>Real-life example</th><th>Response time</th></tr></thead>
+    <tbody>
+      <tr><td><b style="color:var(--red)">Critical (P1)</b></td><td>Attack is happening <b>right now</b>, data is being stolen or damaged</td><td>Ransomware starting to lock files across the company</td><td>Minutes — stop everything else</td></tr>
+      <tr><td><b style="color:var(--yellow)">High (P2)</b></td><td>A strong sign of an attack, not yet confirmed</td><td>Administrator password used from another country</td><td>Within 1 hour</td></tr>
+      <tr><td><b style="color:var(--blue)">Medium (P3)</b></td><td>Suspicious, needs checking</td><td>A USB drive nobody recognises was plugged in</td><td>Same day</td></tr>
+      <tr><td><b style="color:var(--green)">Low (P4)</b></td><td>Probably harmless</td><td>One failed login from a user who later succeeded</td><td>When free</td></tr>
+    </tbody>
+  </table>
+  <div class="say warn">
+    <b class="lab">The trap</b>
+    Analysts love the exciting cases and ignore the boring ones. Attackers know this — they hide
+    inside the noise on purpose. <b>Boring alarms deserve a look too.</b>
+  </div>
+
+  <h3>3.4 The response plan — six stages</h3>
+  <p>Fire drills in school follow a written plan, not a guess. Security incidents work the same way.
+     The plan is often remembered as <b>PICERL</b>.</p>
+
+  <figure class="fig">
+    <svg viewBox="0 0 960 340" role="img" aria-label="Six stages of incident response from preparation to lessons learned">
+      <text x="480" y="24" class="hd">INCIDENT RESPONSE — 6 STAGES (PICERL)</text>
+
+      <rect x="15" y="56" width="145" height="104" class="bn"/>
+      <text x="87" y="82" class="ts" fill="#4cc3f5" font-weight="700">1</text>
+      <text x="87" y="104" class="tt" font-size="13">Preparation</text>
+      <text x="87" y="126" class="ts">plan, tools and</text>
+      <text x="87" y="142" class="ts">team ready BEFORE</text>
+      <text x="87" y="158" class="ts">anything happens</text>
+
+      <path d="M163 108 L185 108" class="ar"/>
+
+      <rect x="189" y="56" width="145" height="104" class="b1"/>
+      <text x="261" y="82" class="ts" fill="#4cc3f5" font-weight="700">2</text>
+      <text x="261" y="104" class="tt" font-size="13">Detection</text>
+      <text x="261" y="126" class="ts">find out that</text>
+      <text x="261" y="142" class="ts">something real</text>
+      <text x="261" y="158" class="ts">is happening</text>
+
+      <path d="M337 108 L359 108" class="ar"/>
+
+      <rect x="363" y="56" width="145" height="104" class="b3"/>
+      <text x="435" y="82" class="ts" fill="#fbbf24" font-weight="700">3</text>
+      <text x="435" y="104" class="tt" font-size="13">Containment</text>
+      <text x="435" y="126" class="ts">stop it spreading —</text>
+      <text x="435" y="142" class="ts">unplug, block,</text>
+      <text x="435" y="158" class="ts">lock the account</text>
+
+      <path d="M511 108 L533 108" class="ar"/>
+
+      <rect x="537" y="56" width="145" height="104" class="b3"/>
+      <text x="609" y="82" class="ts" fill="#fbbf24" font-weight="700">4</text>
+      <text x="609" y="104" class="tt" font-size="13">Eradication</text>
+      <text x="609" y="126" class="ts">remove the cause —</text>
+      <text x="609" y="142" class="ts">delete the malware,</text>
+      <text x="609" y="158" class="ts">fix the hole</text>
+
+      <path d="M685 108 L707 108" class="ar"/>
+
+      <rect x="711" y="56" width="145" height="104" class="b2"/>
+      <text x="783" y="82" class="ts" fill="#4ade80" font-weight="700">5</text>
+      <text x="783" y="104" class="tt" font-size="13">Recovery</text>
+      <text x="783" y="126" class="ts">return to normal</text>
+      <text x="783" y="142" class="ts">from backup, then</text>
+      <text x="783" y="158" class="ts">watch closely</text>
+
+      <path d="M783 164 L783 196 L480 196" class="ar"/>
+
+      <rect x="240" y="204" width="480" height="86" class="b4"/>
+      <text x="480" y="232" class="tt">6 · Lessons Learned — the most important stage</text>
+      <text x="480" y="256" class="ts">Sit down and ask: how did it start? Why did we take so long to notice?</text>
+      <text x="480" y="276" class="ts">Write the report, then change the rules so this exact attack never works twice.</text>
+
+      <path d="M240 247 L160 247 L160 170" class="ar"/>
+      <text x="150" y="230" class="ts" fill="#fb7185" font-size="11" text-anchor="end">back to</text>
+      <text x="150" y="246" class="ts" fill="#fb7185" font-size="11" text-anchor="end">Preparation</text>
+
+      <text x="480" y="322" class="ts">Notice the arrow going back to stage 1 — a good team becomes stronger after every incident.</text>
+    </svg>
+    <figcaption>Picture 5 — The six stages. Never skip stage 6, even when everyone is tired.</figcaption>
+  </figure>
+
+  <div class="grid g2">
+    <div class="card">
+      <h4>Stage 1 · Preparation</h4>
+      <p style="margin:0;font-size:.94rem">Before anything happens: write the plan, decide who does
+      what, keep backups ready, and practise with a drill. <b>An unplanned response is a panic.</b></p>
+      <h4 style="margin-top:14px">Stage 2 · Detection &amp; Analysis</h4>
+      <p style="margin:0;font-size:.94rem">Confirm it is real, find out <b>what, when, where and who</b>,
+      and decide how serious it is. This is where sections 1 and 2 do their work.</p>
+    </div>
+    <div class="card">
+      <h4>Stage 3 · Containment</h4>
+      <p style="margin:0 0 8px;font-size:.94rem"><b>Stop it spreading first.</b> Pull the network cable,
+      block the address, disable the account. Quick and slightly rough — because damage is still
+      growing.</p>
+      <p style="margin:0;font-size:.9rem;color:var(--muted)"><b>Never switch off the computer yet</b> —
+      that erases the evidence you need in stage 4.</p>
+      <h4 style="margin-top:14px">Stage 4 · Eradication</h4>
+      <p style="margin:0;font-size:.94rem">Now remove the cause completely: delete the harmful program,
+      close the hole the attacker used, change every password that may have been stolen.</p>
+    </div>
+    <div class="card">
+      <h4>Stage 5 · Recovery</h4>
+      <p style="margin:0;font-size:.94rem">Bring systems back from a clean backup, test that they work,
+      and then <b>watch them extra closely for a few days</b> to be sure the attacker has not returned.</p>
+    </div>
+    <div class="card">
+      <h4>Stage 6 · Lessons Learned</h4>
+      <p style="margin:0;font-size:.94rem">A short meeting with an honest report: what worked, what did
+      not, what we will change. Then <b>actually change it</b> — new rules, new training, better
+      backups. This is how a SOC improves.</p>
+    </div>
+  </div>
+
+  <h3>3.5 Who does what during an incident</h3>
+  <table>
+    <thead><tr><th>Role</th><th>Job during an incident</th></tr></thead>
+    <tbody>
+      <tr><td><b>Incident Commander</b></td><td>The leader of this case. Gives orders, keeps the timeline, decides when it is over. Does <b>not</b> fix computers — they lead.</td></tr>
+      <tr><td><b>Analyst (L1/L2)</b></td><td>Confirms the attack, finds the affected machines, blocks the attacker.</td></tr>
+      <tr><td><b>Forensics expert</b></td><td>Collects and copies evidence carefully so it can even be used in court later.</td></tr>
+      <tr><td><b>IT / System admin</b></td><td>Rebuilds machines, restores backups, changes passwords.</td></tr>
+      <tr><td><b>Communications / Legal</b></td><td>Tells staff, customers and — if the law requires — the government and police. <b>Never let the technical team handle public statements alone.</b></td></tr>
+      <tr><td><b>Management</b></td><td>Decides money, holidays, and accepts the risk. They must be told within minutes for big incidents.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="say stop">
+    <b class="lab">Evidence — the rules a 9th grader can remember</b>
+    <b>(1)</b> Do not switch the machine off — that erases memory-based proof.<br>
+    <b>(2)</b> Do not investigate on the original — work on a copy.<br>
+    <b>(3)</b> Write down everything you did, with the time — like a chain of signatures
+    (<b>chain of custody</b>). If one signature is missing, a lawyer can throw the proof away.
+  </div>
+
+  <h3>3.6 How good is your SOC? Two numbers</h3>
+  <div class="grid g2">
+    <div class="card tier"><span class="who">MTTD</span>
+      <h4>Mean Time To Detect</h4>
+      <p style="margin:0;font-size:.94rem">How long from the attack starting until <b>we noticed</b>.</p>
+      <p style="margin:8px 0 0;font-size:.9rem;color:var(--muted)">Good SOC: minutes to hours.
+      Weak SOC: months. Many companies still take <b>200 days</b>.</p></div>
+    <div class="card tier t2"><span class="who">MTTR</span>
+      <h4>Mean Time To Respond / Recover</h4>
+      <p style="margin:0;font-size:.94rem">How long from noticing until <b>it is completely fixed</b>.</p>
+      <p style="margin:8px 0 0;font-size:.9rem;color:var(--muted)">Both numbers should go
+      <b>down</b> over time. If they stay the same, the team is not improving.</p></div>
+  </div>
+  <p style="font-size:.94rem;color:var(--muted)">Also useful: <b>how many alarms were raised</b>,
+     <b>how many turned out to be real</b>, and <b>how many incidents repeated</b> (a repeated
+     incident means stage 6 was skipped last time).</p>
+
+  <div class="say try">
+    <b class="lab">The one thing to remember</b>
+    Detection without response is just <b>watching the attack happen</b>.
+    Response without detection is <b>guessing</b>.
+    <b>You need the whole chain: collect → know the enemy → detect → respond → learn.</b>
+  </div>
+</section>
+
+<!-- 4 STORY -->
+<section id="story">
+  <h2>4. One Story, All Three Together</h2>
+  <p class="lead">A short story showing how the three jobs work on the same case, one after another.</p>
+
+  <div class="card">
+    <h4>The case: a fake exam result mail</h4>
+    <p><b>Day 1, 09:15.</b> In the accounts department, Meera gets a mail: <i>"Your salary slip —
+    click here."</i> She clicks. Nothing visible happens. She forgets about it.</p>
+    <p><b>Day 1, 09:40 — Job 1 (Log Collection &amp; Correlation).</b> Three separate logs arrive:
+    Meera clicked a link (laptop log), her browser reached a brand-new domain (firewall log), and
+    an unknown program started running (EDR log). Alone, none looks serious. The correlation rule
+    says: <i>link click → unknown domain → unknown program, all within 30 minutes → raise a
+    HIGH alarm.</i></p>
+    <p><b>Day 1, 09:42 — Job 2 (Threat Intelligence).</b> The alarm is enriched. The intelligence
+    feed says: this domain was registered two days ago and is already reported by 40 other
+    companies; the program's fingerprint matches a known tool used by a group that steals exam
+    papers. <b>Now the alarm has a name and a face.</b></p>
+    <p><b>Day 1, 09:45 — Job 3 (Detection &amp; Response).</b> The analyst confirms it, marks it a
+    <b>P2 incident</b>, and runs the plan: <b>contain</b> — disconnect Meera's laptop from the
+    network; <b>eradicate</b> — remove the program, reset her password, block the domain everywhere;
+    <b>recover</b> — rebuild the laptop from a clean backup; <b>lessons learned</b> — add a rule that
+    alarms for <i>any</i> link click that leads to a domain younger than 7 days, and train the whole
+    staff next Monday.</p>
+    <p style="margin:0"><b>MTTD:</b> 27 minutes from the click. <b>MTTR:</b> 3 hours. No data was
+    lost. And next month's attack on the same group will be caught in <b>under a minute</b>, because
+    of stage 6.</p>
+  </div>
+
+  <figure class="fig">
+    <svg viewBox="0 0 900 300" role="img" aria-label="How the three jobs work together in one incident">
+      <defs>
+        <marker id="ah3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="#5a7286"/>
+        </marker>
+      </defs>
+      <text x="450" y="24" class="hd">THE WHOLE CHAIN, END TO END</text>
+
+      <rect x="20" y="56" width="255" height="120" class="b1"/>
+      <text x="147" y="82" class="tt">① Logs &amp; Correlation</text>
+      <text x="147" y="106" class="ts">3 logs joined by a rule</text>
+      <text x="147" y="130" class="ts">→ 1 clear alarm</text>
+      <text x="147" y="160" class="ts" fill="#4cc3f5">"Something odd happened."</text>
+
+      <path d="M279 116 L311 116" class="ar"/>
+
+      <rect x="315" y="56" width="255" height="120" class="b2"/>
+      <text x="442" y="82" class="tt">② Threat Intelligence</text>
+      <text x="442" y="106" class="ts">who they are, what they want</text>
+      <text x="442" y="130" class="ts">→ alarm gets a meaning</text>
+      <text x="442" y="160" class="ts" fill="#4ade80">"We know this criminal."</text>
+
+      <path d="M574 116 L606 116" class="ar"/>
+
+      <rect x="610" y="56" width="270" height="120" class="b3"/>
+      <text x="745" y="82" class="tt">③ Detect &amp; Respond</text>
+      <text x="745" y="106" class="ts">confirm → contain → fix → learn</text>
+      <text x="745" y="130" class="ts">→ case closed and improved</text>
+      <text x="745" y="160" class="ts" fill="#fbbf24">"Now we act."</text>
+
+      <path d="M745 180 L745 226 L147 226 L147 184" class="ar" stroke-dasharray="6 5"/>
+      <text x="450" y="250" class="ts" fill="#fb7185">The arrow comes back: every incident teaches the rules a new trick.</text>
+      <text x="450" y="276" class="ts">Skip step 1 → you see nothing. Skip step 2 → you don't know who it is.
+      Skip step 3 → you saw it and did nothing.</text>
+    </svg>
+    <figcaption>Picture 6 — Three jobs, one chain. Every incident makes the next one faster.</figcaption>
+  </figure>
+</section>
+
+<!-- 5 GLOSSARY -->
+<section id="glossary">
+  <h2>5. Words to Know</h2>
+  <p class="lead">Use these in your answers. Each one is written in the simplest possible way.</p>
+  <table>
+    <thead><tr><th>Word</th><th>Simple meaning</th></tr></thead>
+    <tbody>
+      <tr><td><b>Log</b></td><td>A line a computer writes by itself: "10:04 Ravi logged in." Like a diary entry.</td></tr>
+      <tr><td><b>Log collection</b></td><td>Gathering the logs from every device into one central, safe place.</td></tr>
+      <tr><td><b>Agent</b></td><td>A small program installed on a device that pushes its logs out to the central system.</td></tr>
+      <tr><td><b>Syslog / collector</b></td><td>A middle box that receives logs from many devices and forwards them onward.</td></tr>
+      <tr><td><b>Normalisation</b></td><td>Rewriting all logs in one common format, so a single search works on everything.</td></tr>
+      <tr><td><b>Enrichment</b></td><td>Adding extra facts (location, who owns it, is it on a bad list) so an alarm makes sense.</td></tr>
+      <tr><td><b>Correlation</b></td><td>Joining many small ordinary events into one big meaningful event using a rule. <b>The most important word on this page.</b></td></tr>
+      <tr><td><b>Threshold rule</b></td><td>"Alarm when this happens more than N times in T time."</td></tr>
+      <tr><td><b>UEBA</b></td><td>User and Entity Behaviour Analytics — a tool that alarms on behaviour that is unusual for that person or device.</td></tr>
+      <tr><td><b>Retention</b></td><td>How long logs are kept before being deleted.</td></tr>
+      <tr><td><b>Threat Intelligence (TI)</b></td><td>Checked, useful information about who may attack you, how they work and what their tools look like.</td></tr>
+      <tr><td><b>IoC</b></td><td>Indicator of Compromise — a fingerprint of something bad: a bad IP, website, file hash or sender.</td></tr>
+      <tr><td><b>TTP</b></td><td>Tactics, Techniques and Procedures — the habits and tricks of an attacker, not just their fingerprints.</td></tr>
+      <tr><td><b>MITRE ATT&amp;CK</b></td><td>A big public catalogue of the real techniques attackers use, numbered like chapters in a textbook. Analysts use it to describe attacks precisely.</td></tr>
+      <tr><td><b>Threat feed</b></td><td>A stream of indicators delivered to your machine, updated regularly — like a daily news wire of bad guys.</td></tr>
+      <tr><td><b>STIX / TAXII</b></td><td>The standard format (STIX) and the delivery method (TAXII) that let different companies share intelligence automatically.</td></tr>
+      <tr><td><b>ISAC</b></td><td>Information Sharing and Analysis Center — a club where companies in the same field (banks, hospitals, schools) warn each other.</td></tr>
+      <tr><td><b>Alert (alarm)</b></td><td>The message a machine sends: "something odd happened, look at this."</td></tr>
+      <tr><td><b>Incident</b></td><td>A confirmed security event — a real attack on the company, with a numbered case file.</td></tr>
+      <tr><td><b>Triage</b></td><td>Deciding which alarm to handle first, based on severity and confidence.</td></tr>
+      <tr><td><b>Containment</b></td><td>Stopping the attack from spreading: disconnect, block, lock.</td></tr>
+      <tr><td><b>Eradication</b></td><td>Removing the cause completely — the malware and the hole it came through.</td></tr>
+      <tr><td><b>Recovery</b></td><td>Getting systems back to normal from a clean backup, then watching closely.</td></tr>
+      <tr><td><b>Lessons learned</b></td><td>The honest review after an incident that changes the rules so it cannot happen again.</td></tr>
+      <tr><td><b>Chain of custody</b></td><td>The written record of who touched the evidence and when, so it can be trusted in court.</td></tr>
+      <tr><td><b>MTTD / MTTR</b></td><td>Mean Time To Detect / Mean Time To Respond — how long to notice, and how long to fix. Both should fall.</td></tr>
+      <tr><td><b>False positive</b></td><td>An alarm that turns out to be harmless. Too many of these make people ignore alarms.</td></tr>
+      <tr><td><b>Insider threat</b></td><td>Danger from a person who is allowed inside — an unhappy employee, or a careless one.</td></tr>
+      <tr><td><b>Phishing</b></td><td>A fake mail or message that tricks you into clicking a link or giving your password.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 6 QA -->
+<section id="qa">
+  <h2>6. Questions &amp; Answers</h2>
+  <p class="lead">Twenty short questions with simple answers. Use the search box to find one.</p>
+
+  <div class="tools">
+    <input type="search" id="q" placeholder="Search a question… e.g. log, IoC, correlation, contain, phishing…" />
+  </div>
+
+  <details class="qa" open><summary>What is a log, in one sentence?</summary><div class="body">
+    <p>A line that a computer writes <b>by itself</b> to record what happened and when —
+    like "09:12 Ravi opened the computer lab."</p></div></details>
+
+  <details class="qa"><summary>What is the difference between log collection and correlation?</summary><div class="body">
+    <p><b>Collection</b> is <b>gathering</b> the logs from many devices into one safe place.
+    <b>Correlation</b> is <b>joining</b> many of those logs into one meaningful story using a rule.
+    Collection fills the room with diaries; correlation is reading all the diaries together and
+    spotting the pattern.</p></div></details>
+
+  <details class="qa"><summary>Why can't one single log prove there is an attack?</summary><div class="body">
+    <p>Because each single line is usually ordinary: a login, a click, a file opened. Any one of
+    them happens thousands of times a day for perfectly honest reasons. The <b>pattern</b> across
+    several logs and several minutes is what makes it an attack — and only correlation can see
+    that pattern.</p></div></details>
+
+  <details class="qa"><summary>What is the difference between pushing and pulling logs?</summary><div class="body">
+    <p><b>Push:</b> a small program (agent) on the device sends its logs out on its own, quickly.
+    <b>Pull:</b> the central system reaches out over the network and reads the logs, with nothing
+    installed. Push is faster and more reliable; pull is easier to set up on routers and cloud
+    services. Most big companies use both.</p></div></details>
+
+  <details class="qa"><summary>Name the four kinds of correlation rules.</summary><div class="body">
+    <ul class="clean">
+      <li><b>Counting (threshold)</b> — too many of the same thing in a short time.</li>
+      <li><b>Sequence</b> — A then B then C, in that order.</li>
+      <li><b>Combining</b> — the same thing happening in two different places at once.</li>
+      <li><b>Anomaly</b> — behaviour that is unusual for this user or device.</li>
+    </ul></div></details>
+
+  <details class="qa"><summary>Why do clocks on different computers need to match?</summary><div class="body">
+    <p>Because correlation joins events <b>by time</b>. If one computer is 20 minutes ahead of
+    another, you cannot tell whether the file was downloaded <i>before</i> the password was stolen
+    or <i>after</i> — and that is exactly the difference between an attacker and an accident.
+    All clocks should be set automatically from the same time source (NTP).</p></div></details>
+
+  <details class="qa"><summary>What is a "silent gap" in log collection?</summary><div class="body">
+    <p>When a device quietly stops sending logs and <b>nobody notices</b>. The attack may happen in
+    exactly that window. The fix is a heartbeat: every device sends a tiny "I am alive" message
+    each hour, and the SOC raises an alarm when one is missing.</p></div></details>
+
+  <details class="qa"><summary>Why must logs be copied somewhere else?</summary><div class="body">
+    <p>Two reasons: <b>(1)</b> the attacker can erase the logs on the machine he broke into to hide
+    his trail, and <b>(2)</b> the machine itself can be switched off or destroyed. A copy stored
+    elsewhere within seconds survives both — and "event log cleared" is itself treated as a serious
+    alarm.</p></div></details>
+
+  <details class="qa"><summary>What is threat intelligence, using a school example?</summary><div class="body">
+    <p>It is the <b>list of known troublemakers and their tricks</b> that you hand to your watchman:
+    "these three people are not allowed in, one of them always pretends to be a delivery boy, and
+    thieves are targeting the computer lab this month." For computers: bad addresses, fake websites,
+    file fingerprints and the habits of attacker groups.</p></div></details>
+
+  <details class="qa"><summary>What is an IoC, and what is a TTP? Why does the difference matter?</summary><div class="body">
+    <p><b>IoC</b> (Indicator of Compromise) is a <b>fingerprint</b> — a bad IP, a fake domain, a
+    harmful file's hash. Easy to block, but goes stale quickly.</p>
+    <p><b>TTP</b> (Tactics, Techniques and Procedures) is the attacker's <b>habits</b> — when they
+    work, what they do first, which tools they prefer. Harder to use, but lasts for years and
+    catches attacks that use completely new files.</p></div></details>
+
+  <details class="qa"><summary>Where can a student find real, free threat intelligence?</summary><div class="body">
+    <p>From open sources: <b>Abuse.ch</b> (malware and bad-address lists), <b>VirusTotal</b>
+    (checks whether a file or link is dangerous), <b>AlienVault OTX</b>, and the public alerts of
+    national CERT teams. Real companies also read reports from their industry's <b>ISAC</b>.</p></div></details>
+
+  <details class="qa"><summary>What is wrong with old or wrong threat intelligence?</summary><div class="body">
+    <p>Attackers change addresses and websites daily, so last year's list blocks almost nothing —
+    but it <b>looks</b> like protection, which is worse than having none. Worse, a wrong entry can
+    block a legitimate website and stop the whole company's work. Intelligence must be checked,
+    dated and regularly thrown out.</p></div></details>
+
+  <details class="qa"><summary>How does threat intelligence connect to the logs from section 1?</summary><div class="body">
+    <p>Through <b>enrichment</b>. The log alone says <code>198.51.100.9</code> — just a number.
+    The intelligence feed adds: "this address attacked 40 schools this week." Now the alarm has
+    meaning and the analyst knows how urgently to act. <b>Logs without intelligence are blind;
+    intelligence without logs is useless.</b></p></div></details>
+
+  <details class="qa"><summary>What is the difference between an alert and an incident?</summary><div class="body">
+    <p>An <b>alert</b> is the machine saying "something odd happened" — thousands arrive daily and
+    most are harmless. An <b>incident</b> is what an analyst calls it after checking and confirming
+    that a real attack affected the company. The smoke alarm beeps (alert); the fire brigade
+    confirms a fire (incident).</p></div></details>
+
+  <details class="qa"><summary>What are the six stages of incident response?</summary><div class="body">
+    <p><b>Preparation → Detection &amp; Analysis → Containment → Eradication → Recovery →
+    Lessons Learned</b> (remembered as <b>PICERL</b>). The last one feeds back into preparation,
+    which is why the diagram is a circle.</p></div></details>
+
+  <details class="qa"><summary>Why must you contain before you eradicate — and not switch the computer off?</summary><div class="body">
+    <p>Containment <b>stops the spread</b> while the attack may still be running — that is urgent.
+    Eradication comes after, when you can remove the cause calmly. And you should <b>not</b> power
+    off the machine first, because much of the proof lives in its memory; instead you disconnect it
+    from the network and copy what you need.</p></div></details>
+
+  <details class="qa"><summary>What is "lessons learned" and why is it the most important stage?</summary><div class="body">
+    <p>It is the honest meeting after the incident: how did it start, why did it take so long to
+    notice, what did we do well, what failed. Then you <b>actually change something</b> — a new
+    rule, a new backup, new training. Without it, the exact same attack succeeds again next month.</p></div></details>
+
+  <details class="qa"><summary>What is the chain of custody?</summary><div class="body">
+    <p>A written record of <b>who handled the evidence, when, and why</b> — signatures, times, seals.
+    If one link in the chain is missing, a lawyer can argue the evidence was changed, and it becomes
+    useless in court.</p></div></details>
+
+  <details class="qa"><summary>What are MTTD and MTTR?</summary><div class="body">
+    <p><b>MTTD</b> = Mean Time To Detect — how long from the attack starting until you noticed.
+    <b>MTTR</b> = Mean Time To Respond/Recover — how long until it was completely fixed.
+    Both should get <b>smaller</b> every month. If MTTD is months, your log collection is broken.</p></div></details>
+
+  <details class="qa"><summary>In three sentences, summarise this whole page.</summary><div class="body">
+    <p><b>First</b> you collect the logs from every device and join them into one story with
+    correlation rules. <b>Second</b> you use threat intelligence to know who the attackers are and
+    what their tricks look like, so the story gets a meaning. <b>Third</b> you detect the real
+    attack, follow the fixed response plan to stop and remove it, and end with lessons learned so
+    the same attack never works twice.</p></div></details>
+</section>
+
+<!-- 7 QUIZ -->
+<section id="quiz">
+  <h2>7. Quick Quiz</h2>
+  <p class="lead">Check yourself. Click a question to see the answer.</p>
+
+  <details class="qa"><summary>Q1. In one word, what is the difference between a log and a correlation?</summary>
+    <div class="body"><p>A log is an <b>event</b>. Correlation is the <b>pattern</b> between events.</p></div></details>
+
+  <details class="qa"><summary>Q2. Twenty wrong passwords in one minute — is that an attack on its own?</summary>
+    <div class="body"><p>Not on its own, but it is a <b>very strong sign</b> of one — exactly the
+    kind of judgement a correlation rule makes, and then an analyst confirms.</p></div></details>
+
+  <details class="qa"><summary>Q3. Name the six steps of the log pipeline.</summary>
+    <div class="body"><p><b>Sources → Collect → Clean &amp; store → Make them the same → Correlate
+    → One clear alarm.</b></p></div></details>
+
+  <details class="qa"><summary>Q4. Which is better for you right now: 10,000 indicators or 50 checked indicators?</summary>
+    <div class="body"><p><b>50 checked ones.</b> Quality beats quantity — 10,000 unfiltered
+    indicators drown the machines and the people, and you will not read any of them.</p></div></details>
+
+  <details class="qa"><summary>Q5. Your friend says "antivirus and threat intelligence are the same thing." Correct them in one line.</summary>
+    <div class="body"><p>An antivirus compares <b>files</b> against a list of bad ones on one
+    machine; threat intelligence tells the <b>whole SOC</b> about attackers, their addresses,
+    their websites and their habits.</p></div></details>
+
+  <details class="qa"><summary>Q6. An analyst gets 5,000 alarms a day. Is the SOC working well?</summary>
+    <div class="body"><p>No. Almost all of them are false alarms, so the team stops reading them and
+    will miss the real one. The rules need tuning — <b>too much noise is itself a failure.</b></p></div></details>
+
+  <details class="qa"><summary>Q7. What must you do first: contain or eradicate?</summary>
+    <div class="body"><p><b>Contain.</b> Stop the attack spreading before you start cleaning,
+    otherwise it grows while you clean.</p></div></details>
+
+  <details class="qa"><summary>Q8. Why is "lessons learned" not just a formality?</summary>
+    <div class="body"><p>Because it is the only stage that changes the rules, the training and the
+    backups. Skip it and the exact same attack succeeds again next month.</p></div></details>
+</section>
+
+</main>
+
+<footer>Single file, no internet needed. Save as <code>index.html</code> and open in any browser.
+Part 1 of this series: <a href="../soc/index.html">SOC Structure, Roles &amp; SIEM Architecture</a>.</footer>
+
+<script>
+(function(){
+  const q = document.getElementById('q');
+  const items = Array.from(document.querySelectorAll('details.qa'));
+  q.addEventListener('input', function(){
+    const t = q.value.trim().toLowerCase();
+    items.forEach(function(d){
+      d.classList.toggle('hide', t && d.textContent.toLowerCase().indexOf(t) === -1);
+    });
+  });
+})();
+</script>
+</body>
+</html>

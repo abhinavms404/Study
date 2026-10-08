@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IDS vs IPS + True/False Positives — Friendly Guide</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    color: #eaf6ff;
+    line-height: 1.7;
+    padding: 30px 16px;
+  }
+  .container { max-width: 950px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 35px; }
+  header h1 { font-size: 2.2rem; color: #7fdbff; }
+  header p { color: #a8c6d8; margin-top: 8px; }
+
+  .card {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    padding: 22px 24px;
+    margin-bottom: 22px;
+    backdrop-filter: blur(6px);
+  }
+  .card h2 { color: #ffd166; margin-bottom: 10px; font-size: 1.4rem; }
+  .card h3 { color: #7fdbff; margin: 14px 0 6px; font-size: 1.05rem; }
+  .badge {
+    display: inline-block; padding: 3px 10px; border-radius: 20px;
+    font-size: .75rem; font-weight: bold; margin-left: 8px; vertical-align: middle;
+  }
+  .b-alert { background: #ff6b6b; color: #2b0a0a; }
+  .b-block { background: #4ecdc4; color: #062b28; }
+  .b-tool { background: #ffd166; color: #3b2c00; }
+
+  .split { display: flex; gap: 18px; flex-wrap: wrap; }
+  .split > div { flex: 1; min-width: 260px; background: rgba(0,0,0,0.22); padding: 16px; border-radius: 10px; }
+
+  ul { margin-left: 20px; }
+  li { margin-bottom: 6px; }
+
+  .analogy {
+    background: rgba(127,219,255,0.10);
+    border-left: 4px solid #7fdbff;
+    padding: 12px 16px; border-radius: 0 8px 8px 0; margin-top: 12px;
+  }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: .95rem; }
+  th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.12); }
+  th { background: rgba(255,255,255,0.10); color: #ffd166; }
+  .good { color: #4ecdc4; font-weight: bold; }
+  .bad  { color: #ff6b6b; font-weight: bold; }
+
+  .matrix { display: grid; grid-template-columns: 120px 1fr 1fr; gap: 8px; margin-top: 16px; }
+  .matrix div { padding: 14px 10px; border-radius: 8px; text-align: center; font-size: .9rem; }
+  .m-head { background: rgba(255,255,255,0.12); font-weight: bold; color: #ffd166; }
+  .m-tp { background: rgba(78,205,196,0.30); }
+  .m-fp { background: rgba(255,209,102,0.30); }
+  .m-fn { background: rgba(255,107,107,0.30); }
+  .m-tn { background: rgba(127,219,255,0.25); }
+  .matrix strong { display: block; font-size: 1rem; }
+
+  .story {
+    background: rgba(255,209,102,0.10);
+    border: 1px dashed #ffd166;
+    padding: 16px; border-radius: 10px; margin-top: 14px;
+  }
+  footer { text-align: center; margin-top: 30px; color: #7fa3b8; font-size: .85rem; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>🛡️ IDS vs IPS — Simple Friend Guide</h1>
+    <p>Two network bodyguards. One just watches. The other tackles.</p>
+  </header>
+
+  <!-- ============ IDS ============ -->
+  <section class="card">
+    <h2>1. What is IDS? <span class="badge b-alert">ALERT ONLY</span></h2>
+    <p><strong>IDS = Intrusion Detection System</strong></p>
+    <p>It <em>watches</em> your network or system, looks for suspicious activity, and
+       <strong>sends an alert</strong> — but it does <u>not</u> stop the attack itself.</p>
+    <h3>Key points</h3>
+    <ul>
+      <li>Passive device — sits and monitors traffic (usually via a <em>mirror/span port</em>).</li>
+      <li>Detects viruses, hackers, policy violations, bad traffic patterns.</li>
+      <li>Problem: it tells you <em>after</em> the damage may already be done.</li>
+      <li>Types: <strong>NIDS</strong> (network) and <strong>HIDS</strong> (host/system).</li>
+    </ul>
+    <div class="analogy">
+      🧑‍💼 <strong>Real-life analogy:</strong> A security guard watching CCTV.
+      He sees a thief breaking in and <em>shouts "Thief!"</em> — but he doesn't stop him.
+      You (the admin) must react.
+    </div>
+  </section>
+
+  <!-- ============ IPS ============ -->
+  <section class="card">
+    <h2>2. What is IPS? <span class="badge b-block">BLOCKS ATTACK</span></h2>
+    <p><strong>IPS = Intrusion Prevention System</strong></p>
+    <p>It does everything IDS does, <em>plus</em> it <strong>actively blocks</strong> the malicious
+       traffic before it reaches your system.</p>
+    <h3>Key points</h3>
+    <ul>
+      <li>Active device — sits <strong>inline</strong> in the traffic path (line of fire).</li>
+      <li>Can drop packets, kill connections, block IP addresses.</li>
+      <li>Faster response, but a wrong decision can block legitimate traffic.</li>
+      <li>Example: blocking a known malware download mid-stream.</li>
+    </ul>
+    <div class="analogy">
+      🥋 <strong>Real-life analogy:</strong> A bouncer at the door.
+      He sees the troublemaker <em>and physically stops him from entering</em>.
+    </div>
+  </section>
+
+  <!-- ============ COMPARISON ============ -->
+  <section class="card">
+    <h2>3. IDS vs IPS — Quick Compare</h2>
+    <table>
+      <tr><th>Point</th><th>IDS</th><th>IPS</th></tr>
+      <tr><td>Full form</td><td>Intrusion Detection System</td><td>Intrusion Prevention System</td></tr>
+      <tr><td>Action</td><td>Detects + Alerts</td><td>Detects + Prevents</td></tr>
+      <tr><td>Traffic</td><td>Passive (mirror copy)</td><td>Inline (real traffic)</td></tr>
+      <tr><td>Speed</td><td>Slower response</td><td>Immediate response</td></tr>
+      <tr><td>Risk</td><td>Attack may already happen</td><td>May block valid traffic (false positive)</td></tr>
+      <tr><td>Placement</td><td>Outside the path</td><td>Inside the path</td></tr>
+    </table>
+  </section>
+
+  <!-- ============ TOOLS ============ -->
+  <section class="card">
+    <h2>4. Real Examples of Tools <span class="badge b-tool">TOOLS</span></h2>
+    <div class="split">
+      <div>
+        <h3>🟠 Wazuh</h3>
+        <ul>
+          <li>Free &amp; <strong>open-source</strong> security platform.</li>
+          <li>Does log analysis, file integrity monitoring, <strong>HIDS</strong>, vulnerability detection.</li>
+          <li>Has its own <strong>SIEM + XDR</strong> capability.</li>
+          <li>Commonly used in SOCs for monitoring servers &amp; endpoints.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🔵 Splunk</h3>
+        <ul>
+          <li>Powerful commercial <strong>SIEM</strong> tool.</li>
+          <li>Collects ("ingests") logs from everywhere and searches them.</li>
+          <li>Builds dashboards, alerts &amp; reports for security events.</li>
+          <li>Famous query language: <strong>SPL (Search Processing Language)</strong>.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="analogy">
+      🧠 <strong>Remember:</strong> Wazuh ≈ open-source all-rounder,
+      Splunk ≈ enterprise log-search giant. Both help a <strong>SOC</strong> analyst
+      see "what happened" across the network.
+    </div>
+  </section>
+
+  <!-- ============ CONFUSION MATRIX ============ -->
+  <section class="card">
+    <h2>5. TP / TN / FP / FN — The Four Results</h2>
+    <p>Whenever a security tool says <em>"This is an attack!"</em>, reality can agree or disagree.
+       That gives us 4 outcomes:</p>
+
+    <div class="matrix">
+      <div class="m-head"></div>
+      <div class="m-head">Reality: Attack</div>
+      <div class="m-head">Reality: Normal</div>
+
+      <div class="m-head">Tool says<br>"Attack"</div>
+      <div class="m-tp"><strong>True Positive (TP)</strong>✔ Correctly caught a real attack</div>
+      <div class="m-fp"><strong>False Positive (FP)</strong>✘ False alarm — harmless traffic flagged</div>
+
+      <div class="m-head">Tool says<br>"Normal"</div>
+      <div class="m-fn"><strong>False Negative (FN)</strong>✘ Missed attack — dangerous!</div>
+      <div class="m-tn"><strong>True Negative (TN)</strong>✔ Correctly ignored normal traffic</div>
+    </div>
+
+    <h3>Short definitions</h3>
+    <ul>
+      <li><span class="good">True Positive</span> — Tool flags an attack, and it <strong>really is</strong> an attack. ✅</li>
+      <li><span class="good">True Negative</span> — Tool says safe, and it <strong>really is</strong> safe. ✅</li>
+      <li><span class="bad">False Positive</span> — Tool flags an attack, but it was <strong>actually normal</strong>. (False alarm / alert fatigue) ⚠️</li>
+      <li><span class="bad">False Negative</span> — Tool says normal, but it was <strong>actually an attack</strong>. (Missed attack — worst case!) 🚨</li>
+    </ul>
+  </section>
+
+  <!-- ============ SMALL EXAMPLE ============ -->
+  <section class="card">
+    <h2>6. One Small Example 🌰</h2>
+    <div class="story">
+      <p><strong>Scenario:</strong> Your IDS/IPS is watching traffic on a company network.</p>
+      <p style="margin-top:10px;">1️⃣ A hacker really sends a SQL-injection attack → tool alerts &amp; blocks it.
+        <br>= <span class="good"><strong>True Positive</strong></span></p>
+      <p>2️⃣ An employee downloads a big software update at lunch → tool says "all good".
+        <br>= <span class="good"><strong>True Negative</strong></span></p>
+      <p>3️⃣ An employee visits a rare but safe website → tool shouts "ATTACK!" and blocks him.
+        <br>= <span class="bad"><strong>False Positive</strong></span> (annoying false alarm)</p>
+      <p>4️⃣ A clever attacker hides malware in normal-looking HTTPS traffic → tool stays silent.
+        <br>= <span class="bad"><strong>False Negative</strong></span> (attack slipped through!)</p>
+    </div>
+
+    <div class="analogy" style="margin-top:16px;">
+      🔑 <strong>Easy memory trick:</strong><br>
+      <strong>"Positive" = tool predicted an ATTACK.</strong>
+      &nbsp;True = correct, False = wrong.<br>
+      So <em>False Positive</em> = wrong alarm, <em>False Negative</em> = missed danger.
+    </div>
+  </section>
+
+  <footer>
+    Made for learning · IDS · IPS · Wazuh · Splunk · TP/TN/FP/FN
+  </footer>
+
+</div>
+</body>
+</html>
